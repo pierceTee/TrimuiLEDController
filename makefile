@@ -27,7 +27,7 @@ package:
 
 	# Create led_controller project package for MinUI
 	mkdir -p release/${PROJECT_NAME}.pak
-	cp scripts/led=controller-launch.sh release//${PROJECT_NAME}.pak/launch.sh
+	cp scripts/led-controller-launch.sh release/${PROJECT_NAME}.pak/launch.sh
 	cp -r workspace/assets/* build/led_controller release/${PROJECT_NAME}.pak
 	chmod -R 777 release/${PROJECT_NAME}.pak
 
