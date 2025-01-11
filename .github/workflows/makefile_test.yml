@@ -2,9 +2,9 @@ name: Makefile CI
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "**" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "**" ]
 
 jobs:
   build:
@@ -14,14 +14,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: configure
-      run: ./configure
-
-    - name: Install dependencies
-      run: make
+    - name: configure test environment
+      run: sudo make deps
 
     - name: Make project
-      run: make
+      run: sudo make
 
     - name: Package project
-      run: make package
+      run: sudo make package
