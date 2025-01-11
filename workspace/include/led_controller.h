@@ -86,7 +86,7 @@ typedef enum
 // SDL Extended set of components required by this application not covered in sdl_base::CoreSDLComponents
 typedef struct
 {
-    SDL_Surface *brickSprite;
+    SDL_Texture *brickSpriteTexture;
     SDL_Texture *backgroundTexture;
     TTF_Font *font;
 } AdditionalSDLComponents;
@@ -314,7 +314,8 @@ int save_settings(AppState *app_state);
 void initialize_animations(AnimationInfo *animations);
 
 /**
- * Render the TrimUI Brick sprite to the screen.
+ * Render the sprite to the screen starting at a given x/y coordinate.
+ *
  *
  * Parameters:
  *      renderer - SDL renderer to draw to.
@@ -326,7 +327,7 @@ void initialize_animations(AnimationInfo *animations);
  *  Returns:
  *     void
  */
-void render_brick_sprite(SDL_Renderer *renderer, SDL_Surface *sprite, int frame_index, int position_x, int position_y);
+void render_sprite(SDL_Renderer *renderer, SDL_Texture *sprite_texture, int frame_index, int position_x, int position_y);
 
 /**
  * Render a text texture to the screen.

@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
         debug_log(log_message, verbose_logging_enabled);
 
         // Render brick sprite
-        render_brick_sprite(core_components.renderer, components.brickSprite, brick_sprite_index, 100, 100);
+        render_sprite(core_components.renderer, components.brickSpriteTexture, brick_sprite_index, 100, 100);
 
         // Render the interactable user interface.
 
@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
         SDL_RenderPresent(core_components.renderer);
         SDL_Log("Error: %s\n", SDL_GetError());
         // Delay to control frame rate
-        //  SDL_Delay(16); // Approximately 60 frames per second
+        SDL_Delay(16); // Approximately 60 frames per second
     }
 
     save_settings(&app_state);
@@ -259,29 +259,14 @@ int initialize_additional_sdl_components(CoreSDLComponents *core_components, Add
     }
 
     // Load the background image and sprite sheet.
-    SDL_Surface *backgroudImage = load_image("main_menu.png");
-    components->brickSprite = load_image("brick_sprite_sheet.png");
-    if (!backgroudImage || !components->brickSprite)
-    {
-        // Logging the error handled by load_image function.
-        IMG_Quit();
-        SDL_DestroyRenderer(core_components->renderer);
-        SDL_DestroyWindow(core_components->window);
-        SDL_Quit();
-        return 1;
-    }
+    components->brickSpriteTexture = create_sdl_texture_from_image(core_components->renderer, BRICK_SPRITE_SHEET_PATH);
 
     // Create a texture to render from the background image.
-    components->backgroundTexture = SDL_CreateTextureFromSurface(core_components->renderer, backgroudImage);
+    components->backgroundTexture = create_sdl_texture_from_image(core_components->renderer, BACKGROUND_IMAGE_PATH);
 
-    SDL_FreeSurface(backgroudImage);
-    if (!components->backgroundTexture)
+    if (!components->brickSpriteTexture || !components->backgroundTexture)
     {
-        SDL_Log("Unable to create backgroundTexture! SDL_Error: %s\n", SDL_GetError());
-        IMG_Quit();
-        SDL_DestroyRenderer(core_components->renderer);
-        SDL_DestroyWindow(core_components->window);
-        SDL_Quit();
+
         return 1;
     }
 
@@ -490,17 +475,13 @@ void initialize_animations(AnimationInfo *animations)
     animations[LED_BACK] = (AnimationInfo){back_frames, 2};
 }
 
-void render_brick_sprite(SDL_Renderer *renderer, SDL_Surface *sprite, int frame_index, int position_x, int position_y)
+void render_sprite(SDL_Renderer *renderer, SDL_Texture *sprite_texture, int frame_index, int position_x, int position_y)
 {
     // Offset the frame index by the width of the sprite to display the next frame
     SDL_Rect src_rect = {frame_index * BRICK_SPRITE_WIDTH, 0, BRICK_SPRITE_WIDTH, BRICK_SPRITE_HEIGHT};
-    SDL_Rect dst_rect = {position_x, position_y, BRICK_SPRITE_WIDTH, BRICK_SPRITE_HEIGHT}; // Position the sprite at (100, 100)
-    SDL_Texture *brick_texture = SDL_CreateTextureFromSurface(renderer, sprite);
-    SDL_RenderCopy(renderer, brick_texture, &src_rect, &dst_rect);
-    SDL_DestroyTexture(brick_texture);
-
-    // Delay to control frame rate
-    SDL_Delay(16); // Approximately 60 frames per second
+    // Position the sprite at x, y with the width and height of the sprite
+    SDL_Rect dst_rect = {position_x, position_y, BRICK_SPRITE_WIDTH, BRICK_SPRITE_HEIGHT};
+    SDL_RenderCopy(renderer, sprite_texture, &src_rect, &dst_rect);
 }
 
 void render_text_texture(SDL_Renderer *renderer, SDL_Texture *texture, int x, int y)
