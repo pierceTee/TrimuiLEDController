@@ -1,0 +1,3 @@
+[submodule "toolchains/arm64-tg3040-toolchain"]
+	path = toolchains/arm64-tg3040-toolchain
+	url = https://github.com/pierceTee/arm64-tg3040-toolchain.git

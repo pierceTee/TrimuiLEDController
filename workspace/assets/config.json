@@ -1,0 +1,7 @@
+{
+  "label": "LED Controller",
+  "icon": "icon.png",
+  "iconsel": "icon.png",
+  "launch": "launch.sh",
+  "description": "Configure the LEDs on your triumUI device"
+}
