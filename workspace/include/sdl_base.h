@@ -44,12 +44,93 @@ typedef enum
     R3,
 } InputType;
 
+/**
+ * Handles the initialization of common SDL components necessary for every app
+ *
+ * Parameters:
+ *      core_components - A pre-allocated CoreSDLComponents struct
+ *                        to encapsulate common SDL objects
+ *      window_title - The title displayed at the top of the window.
+ *
+ * Returns:
+ *      0 on success, 1 on failures
+ */
 int initialize_sdl_core(CoreSDLComponents *core_components, char *window_title);
+
+/**
+ * Frees the core SDL components.
+ *
+ * Parameters:
+ *      core_components - A pre-allocated CoreSDLComponents struct
+ *                        to encapsulate common SDL objects
+ */
 void free_sdl_core(CoreSDLComponents *core_components);
-bool is_supported_input_event(Uint32 event_type);
-const char *get_event_name(Uint32 event_type);
-const char *get_button_name(SDL_GameControllerButton button);
-const char *get_key_name(SDL_Keycode key);
-const char *get_input_type_name(Uint32 inputType);
+
+/**
+ * Converts an SDL event to an InputType to simplify input handling
+ *
+ * Parameters:
+ *      event - The SDL event to convert
+ *      verbose - If true, prints the input type to the console
+ *
+ * Returns:
+ *      InputType enum value if the event is supported, UNKNOWN otherwise
+ */
 InputType sdl_event_to_input_type(SDL_Event *event, bool verbose);
+
+/**
+ * Checks if an SDL event is supported by the input handling system
+ *
+ * Parameters:
+ *      event_type - The SDL event type to check
+ *
+ * Returns:
+ *      true if the event is supported by the input handling system, false otherwise
+ */
+bool is_supported_input_event(Uint32 event_type);
+
+/**
+ * Gets the name of an SDL_Keycode
+ *
+ * Parameters:
+ *      key - The SDL_Keycode to get the name of
+ *
+ * Returns:
+ *      A string containing the name of the key
+ */
+const char *get_input_type_name(Uint32 inputType);
+
+/**
+ * Gets the name of an SDL event type
+ *
+ * Parameters:
+ *      eventType - The SDL event type to get the name of
+ *
+ * Returns:
+ *      A string containing the name of the event type
+ */
+const char *get_event_name(Uint32 eventType);
+
+/**
+ * Gets the name of an SDL_GameControllerButton
+ *
+ * Parameters:
+ *      button - The SDL_GameControllerButton to get the name of
+ *
+ * Returns:
+ *      A string containing the name of the button
+ */
+const char *get_button_name(SDL_GameControllerButton button);
+
+/**
+ * Gets the name of an SDL_Keycode
+ *
+ * Parameters:
+ *      key - The SDL_Keycode to get the name of
+ *
+ * Returns:
+ *      A string containing the name of the key
+ */
+const char *get_key_name(SDL_Keycode key);
+
 #endif

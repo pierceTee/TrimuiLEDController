@@ -146,21 +146,6 @@ void render_colored_square(AppState *app_state, CoreSDLComponents *core_componen
     SDL_RenderFillRect(core_components->renderer, &color_rect);
 }
 
-/**
- * Manage what to do with user input.
- *
- *  Shoulder buttons change which LED is selected.
- *  B button quits the application.
- *  DPAD UP/DOWN selects the setting to change
- *  DPAD LEFT/RIGHT changes the setting value
- *  START saves the configuration file.
- * Parameters:
- *      user_input - pre-processed user input converted from SDL_Event
- *      should_quit - loop control flag to exit the main loop.
- *      app_state - state object with user information we're updating.
- * Returns:
- *      void
- */
 void handle_user_input(InputType user_input, AppState *app_state)
 {
     switch (user_input)
@@ -249,17 +234,7 @@ void handle_change_setting(AppState *app_state, int change)
         break;
     }
 }
-/**
- * Initialize any SDL components needed by the application that aren't
- * already initialized by initialize_sdl_core.
- *
- * Parameters:
- *      core_components - core SDL components
- *      components - SDL components specific to this application
- *
- * Returns:
- *      0 on success, 1 on failures
- */
+
 int initialize_additional_sdl_components(CoreSDLComponents *core_components, AdditionalSDLComponents *components)
 {
     // Initialize SDL_image
@@ -317,15 +292,6 @@ int initialize_additional_sdl_components(CoreSDLComponents *core_components, Add
     return 0;
 }
 
-/**
- * Initialize the user state object.
- *
- * Parameters:
- *    app_state - state object to initialize
- *
- * Returns:
- *   0 on success, 1 on failure
- */
 int initialize_app_state(AppState *app_state)
 {
     // Begin with first LED selected.
@@ -355,12 +321,6 @@ void initialize_user_interface(UserInterface *user_interface, CoreSDLComponents 
     user_interface->selected_option_texture = create_text_texture(core_components->renderer, components->font, user_interface->selected_option_text);
 }
 
-/**
- * Frees all sub-objects of the user_interface
- *
- * Can be used for cleanup and to clear the text off the screen in
- * preparation for the next frame.
- */
 void free_user_interface(UserInterface *user_interface)
 {
     if (user_interface == NULL)
@@ -427,17 +387,6 @@ void update_user_interface_text(UserInterface *user_interface, const CoreSDLComp
     user_interface->selected_option_texture = create_text_texture(core_components->renderer, components->font, user_interface->selected_option_text);
 }
 
-/**
- * Clamp a value between a minimum and maximum value.
- *
- * Parameters:
- *      value - the value to clamp
- *      min - the minimum value
- *      max - the maximum value
- *
- * Returns:
- *      the clamped value
- */
 int clamp(int value, int min, int max)
 {
     if (value < min)
@@ -525,15 +474,6 @@ int save_settings(AppState *app_state)
     return 0;
 }
 
-/**
- * Initialize the mapping of LED options to sprite sheet indicies.
- *
- * Parameters:
- *   animations - mapping of LED options to sprite sheet indicies
- *
- * Returns:
- *  void
- */
 void initialize_animations(AnimationInfo *animations)
 {
     // Define what frames to display for each LED option.
@@ -546,19 +486,6 @@ void initialize_animations(AnimationInfo *animations)
     animations[LED_BACK] = (AnimationInfo){back_frames, 2};
 }
 
-/**
- * Render the TrimUI Brick sprite to the screen.
- *
- * Parameters:
- *      renderer - SDL renderer to draw to.
- *      sprite - SDL surface containing the sprite sheet
- *      frame_index - index of the frame to render
- *      position_x - x position to render the sprite
- *      position_y - y position to render the sprite
- *
- *  Returns:
- *     void
- */
 void render_brick_sprite(SDL_Renderer *renderer, SDL_Surface *sprite, int frame_index, int position_x, int position_y)
 {
     // Offset the frame index by the width of the sprite to display the next frame
@@ -572,18 +499,6 @@ void render_brick_sprite(SDL_Renderer *renderer, SDL_Surface *sprite, int frame_
     SDL_Delay(16); // Approximately 60 frames per second
 }
 
-/**
- * Render a texture to the screen.
- *
- * Parameters:
- *      renderer - SDL renderer
- *      texture - SDL texture
- *      x - x position
- *      y - y position
- *
- * Returns:
- *      void
- */
 void render_text_texture(SDL_Renderer *renderer, SDL_Texture *texture, int x, int y)
 {
     int text_width, text_height;
@@ -604,18 +519,6 @@ void render_user_interface(SDL_Renderer *renderer, UserInterface *user_interface
     render_text_texture(renderer, user_interface->color_text_texture, start_x + x_offset, start_y + y_offset * 5);
 }
 
-/**
- * Update the animation frame index based on the current time.
- *
- * Parameters:
- *      last_frame_time_millis - time of the last frame in the animation
- *      brick_anim_frame_index - index of the current frame in the animation
- *      frame_delay_ms - delay between frames in the animation
- *      frame_count - number of frames in the animation
- *
- *  Returns:
- *    void
- */
 void update_animation_frame_index(Uint32 *last_frame_time_millis, int *brick_anim_frame_index, int frame_count)
 {
     Uint32 current_time_millis = SDL_GetTicks();
@@ -626,16 +529,6 @@ void update_animation_frame_index(Uint32 *last_frame_time_millis, int *brick_ani
     }
 }
 
-/**
- * Load an image from the image directory.
- * Expects image to be located in the IMAGE_DIR directory.
- *
- * Parameters:
- *      image_name - name of the image file
- *
- * Returns:
- *      SDL_Surface* - the loaded image
- */
 SDL_Surface *load_image(char *image_name)
 {
     char image_path[STRING_LENGTH];
@@ -648,17 +541,6 @@ SDL_Surface *load_image(char *image_name)
     return surface;
 }
 
-/**
- * Create a texture from text.
- *
- * Parameters:
- *      renderer - SDL renderer
- *      font - TTF font
- *      text - text to render
- *
- * Returns:
- *      SDL_Texture* - the created texture
- */
 SDL_Texture *create_text_texture(SDL_Renderer *renderer, TTF_Font *font, const char *text)
 {
     // Define colors for shadow and main text
@@ -782,16 +664,6 @@ char *led_internal_name(Led led)
     }
 }
 
-/**
- * Log a message to the console if verbose logging is enabled.
- *
- * Parameters:
- *      message - The message to log
- *      verbose_logging_enabled - If true, the message will be printed to the console
- *
- * Returns:
- *      void
- */
 void debug_log(char *message, bool verbose_logging_enabled)
 {
     if (verbose_logging_enabled)
@@ -800,15 +672,6 @@ void debug_log(char *message, bool verbose_logging_enabled)
     }
 }
 
-/**
- * Call the UPDATE_LED_SYS_FILES_SCRIPT script.
- *
- * Parameters:
- *      N/A
- *
- * Returns:
- *      void
- */
 void update_led_sys_files()
 {
     char command[STRING_LENGTH];
@@ -929,16 +792,6 @@ void update_leds(AppState *app_state)
     }
 }
 
-/**
- * Clean up SDL components and exit the application.
- *
- * Parameters:
- *      core_components - core SDL components
- *      components - SDL components specific to this application
- *
- * Returns:
- *      0 on success
- */
 int teardown(CoreSDLComponents *core_components, AdditionalSDLComponents *components, UserInterface *user_interface)
 {
     free_user_interface(user_interface);
