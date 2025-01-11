@@ -7,10 +7,12 @@
 #include "sdl_base.h"
 
 // ** File locations **
-#define IMAGE_DIR "menu_images"
+#define IMAGE_DIR "assets/images"
+#define BACKGROUND_IMAGE_PATH "assets/images/main_menu.png"
+#define BRICK_SPRITE_SHEET_PATH "assets/images/brick_sprite_sheet.png"
+#define FONT_PATH "assets/retro_gaming.ttf"
 #define SETTINGS_FILE "settings.ini"
 #define UPDATE_LED_SYS_FILES_SCRIPT "./update_led_sys_files.sh"
-#define SETTINGS_DAEMON_SCRIPT "./settings_daemon"
 // Location of system files we need to edit to change LEDs
 #define SYS_FILE_PATH "/sys/class/led_anim"
 
@@ -18,7 +20,7 @@
 // TrimUI Brick WxH
 #define WINDOW_WIDTH 1024
 #define WINDOW_HEIGHT 768
-#define FONT_SIZE 24
+#define FONT_SIZE 34
 #define WINDOW_TITLE "Led Controller"
 #define BRICK_SPRITE_HEIGHT 500
 #define BRICK_SPRITE_WIDTH 350
@@ -468,17 +470,6 @@ void update_led_sys_files();
 void render_colored_square(AppState *app_state, CoreSDLComponents *core_components);
 
 /**
- * Update the LEDs.
- *
- * Parameters:
- *      app_state - state object with user information we're updating.
- *
- * Returns:
- *      void
- */
-void update_leds(AppState *app_state);
-
-/**
  * Teardown the application.
  *
  * Parameters:
@@ -550,5 +541,20 @@ void write_effect_duration_data(FILE *file, const AppState *app_state, const Led
  *      void
  */
 void write_color_data(FILE *file, const AppState *app_state, const Led led, char *filepath, const char *suffix);
+
+/**
+ * Write user selection data to the associated LED files.
+ *
+ *  Opens several files in the /sys/class/led_anim directory and writes
+ *  the user selected values to the files. The firmware continually
+ *  checks the values in this directory and updates the LEDs accordingly.
+ *
+ * Parameters:
+ *      app_state - state object with user information we're updating.
+ *
+ * Returns:
+ *      void
+ */
+void update_leds(AppState *app_state);
 
 #endif

@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+
 int main(int argc, char *argv[])
 {
     // Handle program inputs
@@ -127,6 +128,9 @@ int main(int argc, char *argv[])
 
         // Main render call to update screen
         SDL_RenderPresent(core_components.renderer);
+        SDL_Log("Error: %s\n", SDL_GetError());
+        // Delay to control frame rate
+        //  SDL_Delay(16); // Approximately 60 frames per second
     }
 
     save_settings(&app_state);
@@ -282,7 +286,7 @@ int initialize_additional_sdl_components(CoreSDLComponents *core_components, Add
     }
 
     // Load font
-    components->font = TTF_OpenFont("retro_gaming.ttf", 34); // Specify your font path
+    components->font = TTF_OpenFont("assets/retro_gaming.ttf", 34); // Specify your font path
     if (!components->font)
     {
         SDL_Log("Failed to load font! TTF_Error: %s\n", TTF_GetError());
@@ -669,16 +673,6 @@ void debug_log(char *message, bool verbose_logging_enabled)
     if (verbose_logging_enabled)
     {
         printf("%s\n", message);
-    }
-}
-
-void update_led_sys_files()
-{
-    char command[STRING_LENGTH];
-    snprintf(command, sizeof(command), "sh %s", UPDATE_LED_SYS_FILES_SCRIPT);
-    if (system(command))
-    {
-        fprintf(stderr, "Failed to execute script: %s\n", UPDATE_LED_SYS_FILES_SCRIPT);
     }
 }
 

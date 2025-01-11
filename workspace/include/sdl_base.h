@@ -79,6 +79,20 @@ void free_sdl_core(CoreSDLComponents *core_components);
 InputType sdl_event_to_input_type(SDL_Event *event, bool verbose);
 
 /**
+ * Create an SDL texture from an image file.
+ *
+ *  Returned pointer must be freed by the caller
+ *
+ * Parameters:
+ *      renderer - The SDL renderer to create the texture with
+ *      full_image_path - The full path to the image file
+ *
+ * Returns:
+ *      SDL_Texture pointer containing the image.
+ */
+SDL_Texture *create_sdl_texture_from_image(SDL_Renderer *renderer, char *full_image_path);
+
+/**
  * Checks if an SDL event is supported by the input handling system
  *
  * Parameters:

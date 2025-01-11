@@ -22,15 +22,14 @@ package:
 	# Create general project package
 	mkdir -p release/${PROJECT_NAME}
 	cp scripts/led-controller-launch.sh release/${PROJECT_NAME}/launch.sh
-	cp -r workspace/assets/* build/led_controller release/${PROJECT_NAME}
+	cp -r workspace/assets/ build/* workspace/config_files/* release/${PROJECT_NAME}
 	chmod -R 777 release/${PROJECT_NAME}
 
 	# Create led_controller project package for MinUI
 	mkdir -p release/${PROJECT_NAME}.pak
 	cp scripts/led-controller-launch.sh release/${PROJECT_NAME}.pak/launch.sh
-	cp -r workspace/assets/* build/led_controller release/${PROJECT_NAME}.pak
+	cp -r workspace/assets/ workspace/config_files/* build/* release/${PROJECT_NAME}.pak
 	chmod -R 777 release/${PROJECT_NAME}.pak
-
 
 clean:
 	rm -rf build release

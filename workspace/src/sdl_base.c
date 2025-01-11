@@ -87,6 +87,24 @@ void free_sdl_core(CoreSDLComponents *core_components)
     }
 }
 
+SDL_Texture *create_sdl_texture_from_image(SDL_Renderer *renderer, char *full_image_path)
+{
+    SDL_Surface *surface = IMG_Load(full_image_path);
+    if (!surface)
+    {
+        SDL_Log("Unable to load image %s ! IMG_Error: %s\n", full_image_path, IMG_GetError());
+        return NULL;
+    }
+
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_FreeSurface(surface);
+    if (!texture)
+    {
+        SDL_Log("Unable to create image texture! SDL_Error: %s\n", SDL_GetError());
+    }
+    return texture;
+}
+
 InputType sdl_event_to_input_type(SDL_Event *event, bool verbose)
 {
     if (is_supported_input_event(event->type))
