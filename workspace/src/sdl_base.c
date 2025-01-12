@@ -10,14 +10,14 @@ int initialize_sdl_core(CoreSDLComponents *core_components, char *window_title)
     {
         window_title = "";
     }
-    // Initialize SDL
+    /* Initialize SDL */
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
     {
         SDL_Log("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
         return 1;
     }
 
-    // Initialize window
+    /* Initialize window */
     core_components->window = SDL_CreateWindow(window_title,
                                                SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                                core_components->window_width, core_components->window_height,
@@ -29,7 +29,7 @@ int initialize_sdl_core(CoreSDLComponents *core_components, char *window_title)
         return 1;
     }
 
-    // Initialize renderer
+    /* Initialize renderer */
     core_components->renderer = SDL_CreateRenderer(core_components->window, -1, SDL_RENDERER_ACCELERATED);
     if (!core_components->renderer)
     {
@@ -39,7 +39,7 @@ int initialize_sdl_core(CoreSDLComponents *core_components, char *window_title)
         return 1;
     }
 
-    // Initialize controller
+    /* Initialize controller */
     if (SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER) < 0)
     {
         SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
@@ -65,7 +65,7 @@ int initialize_sdl_core(CoreSDLComponents *core_components, char *window_title)
         SDL_Log("No game controller available");
     }
 
-    // Clear screen
+    /* Clear screen */
     SDL_RenderClear(core_components->renderer);
 
     return 0;

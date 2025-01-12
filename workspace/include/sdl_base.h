@@ -6,9 +6,10 @@
 #include <SDL2/SDL_image.h>
 #include <stdbool.h>
 
-// Struct to hold core SDL components
-//
-// Helps keep all SDL components in one place.
+/* Struct to hold core SDL components
+ *
+ * Helps keep all SDL components in one place.
+ */
 typedef struct
 {
     SDL_Window *window;
@@ -18,9 +19,10 @@ typedef struct
     int window_height;
 } CoreSDLComponents;
 
-// Used to convert SDL inputs to a common input definition.
-//
-// Useful in the case of accepting both keyboard and controller inputs.
+/* Used to convert SDL inputs to a common input definition.
+ *
+ * Useful in the case of accepting both keyboard and controller inputs.
+ */
 typedef enum
 {
     UNKNOWN,

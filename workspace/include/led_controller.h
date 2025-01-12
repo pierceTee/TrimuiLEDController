@@ -13,11 +13,11 @@
 #define FONT_PATH "assets/retro_gaming.ttf"
 #define SETTINGS_FILE "settings.ini"
 #define UPDATE_LED_SYS_FILES_SCRIPT "./update_led_sys_files.sh"
-// Location of system files we need to edit to change LEDs
+/* Location of system files we need to edit to change LEDs */
 #define SYS_FILE_PATH "/sys/class/led_anim"
 
 // ** SDL/Animation Consts **
-// TrimUI Brick WxH
+/* TrimUI Brick WxH */
 #define WINDOW_WIDTH 1024
 #define WINDOW_HEIGHT 768
 #define FONT_SIZE 34
@@ -25,34 +25,32 @@
 #define BRICK_SPRITE_HEIGHT 500
 #define BRICK_SPRITE_WIDTH 350
 #define BRICK_ANIM_FRAME_DELAY_MS 500
-// Indicator to render current user selection (i.e '>>> Brightness: 100')
+/* Indicator to render current user selection (i.e '>>> Brightness: 100') */
 #define MENU_CARRET ">>> "
 
-// ** Settings Consts **
-// FRONT, TOP, BACK
+//  ** Settings Consts **
+/* FRONT, TOP, BACK */
 #define LED_COUNT 3
-// brightness, effect, color, duration
+/* brightness, effect, color, duration */
 #define LED_SETTINGS_COUNT 4
-// DISABLE, LINEAR, BREATH, SNIFF, STATIC, BLINK1, BLINK2, BLINK3
+/* DISABLE, LINEAR, BREATH, SNIFF, STATIC, BLINK1, BLINK2, BLINK3 */
 #define ANIMATION_EFFECT_COUNT 8
-// 0xRRGGBBAA
+/* 0xRRGGBBAA */
 #define COLOR_HEX_LENGTH 8
-// Maximum brightness value allowed by trimui firmware
+/* Maximum brightness value allowed by trimui firmware */
 #define MAX_BRIGHTNESS 200
-// Maximum duration to cycle a lighting effect
+/* Maximum duration to cycle a lighting effect */
 #define MAX_DURATION 5000
-// How much to increment duration by when the user increases/decreases
+/* How much to increment duration by when the user increases/decreases */
 #define DURATION_INCREMENT 500
-// How much to increment the brightness by when increasing/decreasing
+/* How much to increment the brightness by when increasing/decreasing */
 #define BRIGHTNESS_INCREMENT 10
-
-// How many colors we support.
+/* How many colors we support */
 #define NUM_COLORS 20
-
-// ** Application Consts **
+/* Application Consts */
 #define STRING_LENGTH 256
 
-// The different Led clusters we support
+/* The different Led clusters we support */
 typedef enum
 {
     LED_FRONT,
@@ -60,8 +58,8 @@ typedef enum
     LED_BACK,
 } Led;
 
-// The different Animation effect options recognized by the TrimUI firmware
-// Reference:  "/sys/class/led_anim/help"
+/* The different Animation effect options recognized by the TrimUI firmware */
+/* Reference:  "/sys/class/led_anim/help" */
 typedef enum
 {
     DISABLE,
@@ -74,7 +72,7 @@ typedef enum
     BLINK3
 } AnimationEffect;
 
-// The different LED functions we support modifying
+/* The different LED functions we support modifying */
 typedef enum
 {
     BRIGHTNESS,
@@ -83,61 +81,65 @@ typedef enum
     COLOR,
 } LedSettingOption;
 
-// SDL Extended set of components required by this application not covered in sdl_base::CoreSDLComponents
+/* SDL Extended set of components required by this application not covered in sdl_base::CoreSDLComponents */
 typedef struct
 {
     SDL_Texture *backgroundTexture;
     TTF_Font *font;
 } AdditionalSDLComponents;
 
-// Cluster of all mutable user-interface related objects
+/* Cluster of all mutable user-interface related objects */
 typedef struct
 {
-    // Texture for rendering on screen logging text.
+    /* Texture for rendering on screen logging text */
     SDL_Texture *logging_text_texture;
-    // Texture for rendering brightness value.
+    /* Texture for rendering brightness value */
     SDL_Texture *brightness_text_texture;
-    // Texture for rendering effect value.
+    /* Texture for rendering effect value */
     SDL_Texture *effect_text_texture;
-    // Texture for rendering color value.
+    /* Texture for rendering color value */
     SDL_Texture *color_text_texture;
-    // Texture for rendering duration value.
+    /* Texture for rendering duration value */
     SDL_Texture *duration_text_texture;
-    // Texture for rendering selected LED.
+    /* Texture for rendering selected LED */
     SDL_Texture *selected_led_texture;
-    // Texture for rendering selected option.
+    /* Texture for rendering selected option */
     SDL_Texture *selected_option_texture;
-    // Log message we display in console if verbose logging is enabled.
+    /* Log message we display in console if verbose logging is enabled */
     char log_message[STRING_LENGTH];
-    // Log message we display on screen, gets updated based on user input.
+    /* Log message we display on screen, gets updated based on user input */
     char onscreen_log_message[STRING_LENGTH];
-    // Text that displays the brightness value information.
+    /* Text that displays the brightness value information */
     char brightness_text[STRING_LENGTH];
-    // Text that displays the effect value information.
+    /* Text that displays the effect value information */
     char effect_text[STRING_LENGTH];
-    // Text that displays the color value information.
+    /* Text that displays the color value information */
     char color_text[STRING_LENGTH];
-    // Text that displays the duration value information.
+    /* Text that displays the duration value information */
     char duration_text[STRING_LENGTH];
-    // Text that displays the selected LED information.
+    /* Text that displays the selected LED information */
     char selected_led_text[STRING_LENGTH];
-    // Text that displays the selected option information.
+    /* Text that displays the selected option information */
     char selected_option_text[STRING_LENGTH];
 } UserInterface;
 
-// Abstraction of what frames relate to a particular animation.
-//
-// I.E if an animation uses frames 0, 3, 4 of the horizontal sprite sheet,
-// it would be stored as:
-//  frame_indicies = [0, 3, 4]
-//  frame_count = 3
+/* Abstraction of what frames relate to a particular animation.
+ *
+ * I.E if an animation uses frames 0, 3, 4 of the horizontal sprite sheet,
+ * with durations of 1000, 500, 500 milliseconds respectively,
+ * it would be stored as:
+ *  frame_indicies = [0, 3, 4]
+ *  frame_duration_millis = [1000, 500, 500]
+ *  frame_count = 3
+ */
 typedef struct
 {
     int *frame_indicies;
+    int *frame_duration_millis;
     int frame_count;
 } AnimationInfo;
 
-// Sprite object that contains everything necessary to render a sprite.
+/* Sprite object that contains everything necessary to render a sprite. */
 typedef struct
 {
     SDL_Texture *sprite_texture;
@@ -151,7 +153,7 @@ typedef struct
     Uint32 last_frame_time_millis;
 } Sprite;
 
-// Collection of values for each supported LED setting.
+/* Collection of values for each supported LED setting. */
 typedef struct
 {
     int brightness;
@@ -325,9 +327,11 @@ void free_sprite(Sprite *sprite);
  *  Works by selecting the correct section of the sprite sheet to render and
  *  applying that to a SDL_Rect which is copies to the renderer at the chosen
  *  position. If enough time has elapsed, the frame index is updated to the next
- *  frame in the animation.
+ *  frame in the animation. As with all Sprite Objects, we expect the sprite to be
+ *  a horizontal sprite sheet.
  *
- *  As with all Sprite Objects, we expect the sprite to be a horizontal sprite sheet.
+ *  Note: Animation index is expected to be set before calling this function.
+ *
  * Parameters:
  *      renderer - SDL renderer to draw to.
  *      sprite - SDL surface containing the sprite sheet
