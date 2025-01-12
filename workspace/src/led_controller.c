@@ -24,9 +24,7 @@ int main(int argc, char *argv[])
     // The collection of user interface related objects.
     UserInterface user_interface;
 
-    // Mapping of LED cluster to sprite sheet indices.
-    AnimationInfo animations[LED_COUNT];
-
+    Sprite brick_sprite;
     // The last user input converted from SDL_Event.
     InputType user_input;
 
@@ -36,13 +34,6 @@ int main(int argc, char *argv[])
     // Log message we display in console if verbose logging is enabled.
     char log_message[STRING_LENGTH];
 
-    // Animation variables
-    // Index of the current frame in the brick animation.
-    int brick_anim_frame_index = 0;
-
-    // Time of the last frame in the brick animation.
-    Uint32 last_frame_time_millis = SDL_GetTicks();
-
     // Initialize onscreen logging message
 
     // Initialize Primary SDL components
@@ -51,7 +42,6 @@ int main(int argc, char *argv[])
 
     // Initialize auxilliary data structures
     initialize_app_state(&app_state);
-    initialize_animations(animations);
     update_leds(&app_state);
     if (initialize_sdl_core(&core_components, WINDOW_TITLE) != 0 ||
         initialize_additional_sdl_components(&core_components, &components) != 0)
@@ -62,6 +52,8 @@ int main(int argc, char *argv[])
     initialize_user_interface(&user_interface, &core_components, &components);
     update_user_interface_text(&user_interface, &core_components, &components, &app_state);
 
+    // Initialize sprites
+    initialize_brick_sprite(&brick_sprite, core_components.renderer);
     // Render the background
     SDL_RenderCopy(core_components.renderer, components.backgroundTexture, NULL, NULL);
 
@@ -102,9 +94,6 @@ int main(int argc, char *argv[])
             }
         }
 
-        // Update animation frame
-        update_animation_frame_index(&last_frame_time_millis, &brick_anim_frame_index, animations[app_state.selected_led].frame_count);
-
         // Clear screen
         SDL_RenderClear(core_components.renderer);
 
@@ -114,13 +103,12 @@ int main(int argc, char *argv[])
         // Render the user-selected color in front of a black square
         render_colored_square(&app_state, &core_components);
 
-        // Index on the sheet just cycles between the available indicies for the selected LED.
-        int brick_sprite_index = animations[app_state.selected_led].frame_indicies[brick_anim_frame_index];
-        snprintf(log_message, sizeof(log_message), "Selected LED: %d, Frame index: %d\n", app_state.selected_led, brick_sprite_index);
+        snprintf(log_message, sizeof(log_message), "Selected LED: %d\n", app_state.selected_led);
         debug_log(log_message, verbose_logging_enabled);
 
         // Render brick sprite
-        render_sprite(core_components.renderer, components.brickSpriteTexture, brick_sprite_index, 100, 100);
+        brick_sprite.current_animation_index = app_state.selected_led;
+        render_sprite(core_components.renderer, &brick_sprite, 100, 100);
 
         // Render the interactable user interface.
 
@@ -128,14 +116,14 @@ int main(int argc, char *argv[])
 
         // Main render call to update screen
         SDL_RenderPresent(core_components.renderer);
-        SDL_Log("Error: %s\n", SDL_GetError());
+        // SDL_Log("Error: %s\n", SDL_GetError());
         // Delay to control frame rate
         SDL_Delay(16); // Approximately 60 frames per second
     }
 
     save_settings(&app_state);
     update_leds(&app_state);
-    return teardown(&core_components, &components, &user_interface);
+    return teardown(&core_components, &components, &user_interface, &brick_sprite);
 }
 
 void render_colored_square(AppState *app_state, CoreSDLComponents *core_components)
@@ -258,13 +246,10 @@ int initialize_additional_sdl_components(CoreSDLComponents *core_components, Add
         return 1;
     }
 
-    // Load the background image and sprite sheet.
-    components->brickSpriteTexture = create_sdl_texture_from_image(core_components->renderer, BRICK_SPRITE_SHEET_PATH);
-
     // Create a texture to render from the background image.
     components->backgroundTexture = create_sdl_texture_from_image(core_components->renderer, BACKGROUND_IMAGE_PATH);
 
-    if (!components->brickSpriteTexture || !components->backgroundTexture)
+    if (!components->backgroundTexture)
     {
 
         return 1;
@@ -463,25 +448,78 @@ int save_settings(AppState *app_state)
     return 0;
 }
 
-void initialize_animations(AnimationInfo *animations)
+int initialize_brick_sprite(Sprite *brick_sprite, SDL_Renderer *renderer)
 {
+    // Load the brick sprite image to a texture
+
+    brick_sprite->sprite_texture = create_sdl_texture_from_image(renderer, BRICK_SPRITE_SHEET_PATH);
+    if (!brick_sprite->sprite_texture)
+    {
+        SDL_Log("Failed to load brick sprite texture from %s", BRICK_SPRITE_SHEET_PATH);
+        return 1;
+    }
+
+    // We have one animation for each LED.
+    brick_sprite->animations = (AnimationInfo *)malloc(sizeof(AnimationInfo) * LED_COUNT);
+    brick_sprite->animation_count = LED_COUNT;
+    brick_sprite->sprite_width = BRICK_SPRITE_WIDTH;
+    brick_sprite->sprite_height = BRICK_SPRITE_HEIGHT;
+    brick_sprite->current_frame_index = 0;
+    brick_sprite->current_animation_index = 0;
+    brick_sprite->frame_delay = BRICK_ANIM_FRAME_DELAY_MS;
+    brick_sprite->last_frame_time_millis = SDL_GetTicks();
+
     // Define what frames to display for each LED option.
     static int front_frames[] = {0, 1};
     static int top_frames[] = {2, 3};
     static int back_frames[] = {2, 4};
 
-    animations[LED_FRONT] = (AnimationInfo){front_frames, 2};
-    animations[LED_TOP] = (AnimationInfo){top_frames, 2};
-    animations[LED_BACK] = (AnimationInfo){back_frames, 2};
+    brick_sprite->animations[LED_FRONT] = (AnimationInfo){front_frames, 2};
+    brick_sprite->animations[LED_TOP] = (AnimationInfo){top_frames, 2};
+    brick_sprite->animations[LED_BACK] = (AnimationInfo){back_frames, 2};
+    return 0;
 }
 
-void render_sprite(SDL_Renderer *renderer, SDL_Texture *sprite_texture, int frame_index, int position_x, int position_y)
+void free_sprite(Sprite *sprite)
 {
+    if (sprite == NULL)
+    {
+        return; // Nothing to clean up if sprite is NULL
+    }
+
+    if (sprite->sprite_texture)
+    {
+        SDL_DestroyTexture(sprite->sprite_texture);
+        sprite->sprite_texture = NULL;
+    }
+
+    if (sprite->animations)
+    {
+        free(sprite->animations);
+        sprite->animations = NULL;
+    }
+}
+
+void update_sprite_render(SDL_Renderer *renderer, Sprite *sprite, int position_x, int position_y)
+{
+    // Get the current animation and frame to render
+    AnimationInfo *current_animation = &sprite->animations[sprite->current_animation_index];
+    int sprite_sheet_offset = current_animation->frame_indicies[sprite->current_frame_index];
+
     // Offset the frame index by the width of the sprite to display the next frame
-    SDL_Rect src_rect = {frame_index * BRICK_SPRITE_WIDTH, 0, BRICK_SPRITE_WIDTH, BRICK_SPRITE_HEIGHT};
-    // Position the sprite at x, y with the width and height of the sprite
-    SDL_Rect dst_rect = {position_x, position_y, BRICK_SPRITE_WIDTH, BRICK_SPRITE_HEIGHT};
-    SDL_RenderCopy(renderer, sprite_texture, &src_rect, &dst_rect);
+    SDL_Rect src_rect = {sprite_sheet_offset * sprite->sprite_width, 0, sprite->sprite_width, sprite->sprite_height};
+
+    // Position the sprite at x, y with the width and height of the sprite and copy to the renderer.
+    SDL_Rect dst_rect = {position_x, position_y, sprite->sprite_width, sprite->sprite_height};
+    SDL_RenderCopy(renderer, sprite->sprite_texture, &src_rect, &dst_rect);
+
+    // Update the frame index for the next sprite
+    Uint32 current_time_millis = SDL_GetTicks();
+    if (current_time_millis - sprite->last_frame_time_millis >= sprite->frame_delay)
+    {
+        sprite->current_frame_index = (sprite->current_frame_index + 1) % sprite->animations[sprite->current_animation_index].frame_count;
+        sprite->last_frame_time_millis = current_time_millis;
+    }
 }
 
 void render_text_texture(SDL_Renderer *renderer, SDL_Texture *texture, int x, int y)
@@ -767,10 +805,11 @@ void update_leds(AppState *app_state)
     }
 }
 
-int teardown(CoreSDLComponents *core_components, AdditionalSDLComponents *components, UserInterface *user_interface)
+int teardown(CoreSDLComponents *core_components, AdditionalSDLComponents *components, UserInterface *user_interface, Sprite *brick_sprite)
 {
     free_user_interface(user_interface);
     free_sdl_core(core_components);
+    free_sprite(brick_sprite);
     SDL_DestroyTexture(components->backgroundTexture);
     TTF_CloseFont(components->font);
     IMG_Quit();

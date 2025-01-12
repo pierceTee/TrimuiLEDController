@@ -86,7 +86,6 @@ typedef enum
 // SDL Extended set of components required by this application not covered in sdl_base::CoreSDLComponents
 typedef struct
 {
-    SDL_Texture *brickSpriteTexture;
     SDL_Texture *backgroundTexture;
     TTF_Font *font;
 } AdditionalSDLComponents;
@@ -137,6 +136,20 @@ typedef struct
     int *frame_indicies;
     int frame_count;
 } AnimationInfo;
+
+// Sprite object that contains everything necessary to render a sprite.
+typedef struct
+{
+    SDL_Texture *sprite_texture;
+    AnimationInfo *animations;
+    int animation_count;
+    int sprite_width;
+    int sprite_height;
+    int current_frame_index;
+    int current_animation_index;
+    int frame_delay;
+    Uint32 last_frame_time_millis;
+} Sprite;
 
 // Collection of values for each supported LED setting.
 typedef struct
@@ -302,32 +315,29 @@ int read_settings(AppState *app_state);
  */
 int save_settings(AppState *app_state);
 
-/**
- * Initialize the mapping of LED options to sprite sheet indicies.
- *
- * Parameters:
- *   animations - mapping of LED options to sprite sheet indicies
- *
- * Returns:
- *  void
- */
-void initialize_animations(AnimationInfo *animations);
+int initialize_brick_sprite(Sprite *brick_sprite, SDL_Renderer *renderer);
+
+void free_sprite(Sprite *sprite);
 
 /**
- * Render the sprite to the screen starting at a given x/y coordinate.
+ * Handles all the logic for preparing the next frame of a sprite animation.
  *
+ *  Works by selecting the correct section of the sprite sheet to render and
+ *  applying that to a SDL_Rect which is copies to the renderer at the chosen
+ *  position. If enough time has elapsed, the frame index is updated to the next
+ *  frame in the animation.
  *
+ *  As with all Sprite Objects, we expect the sprite to be a horizontal sprite sheet.
  * Parameters:
  *      renderer - SDL renderer to draw to.
  *      sprite - SDL surface containing the sprite sheet
- *      frame_index - index of the frame to render
  *      position_x - x position to render the sprite
  *      position_y - y position to render the sprite
  *
  *  Returns:
  *     void
  */
-void render_sprite(SDL_Renderer *renderer, SDL_Texture *sprite_texture, int frame_index, int position_x, int position_y);
+void update_sprite_render(SDL_Renderer *renderer, Sprite *sprite, int position_x, int position_y);
 
 /**
  * Render a text texture to the screen.
@@ -481,8 +491,7 @@ void render_colored_square(AppState *app_state, CoreSDLComponents *core_componen
  * Returns:
  *      0 on success, 1 on failure
  */
-int teardown(CoreSDLComponents *core_components, AdditionalSDLComponents *components, UserInterface *user_interface);
-
+int teardown(CoreSDLComponents *core_components, AdditionalSDLComponents *components, UserInterface *user_interface, Sprite *brick_sprite);
 /**
  * Write the max scale data to a file.
  *
