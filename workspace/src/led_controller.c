@@ -467,20 +467,17 @@ int initialize_brick_sprite(Sprite *brick_sprite, SDL_Renderer *renderer)
     brick_sprite->animation_count = LED_COUNT;
     brick_sprite->sprite_width = BRICK_SPRITE_WIDTH;
     brick_sprite->sprite_height = BRICK_SPRITE_HEIGHT;
-    brick_sprite->current_frame_index = 0;
     brick_sprite->current_animation_index = 0;
-    brick_sprite->frame_delay = BRICK_ANIM_FRAME_DELAY_MS;
-    brick_sprite->last_frame_time_millis = SDL_GetTicks();
 
     /* Define what frames to display for each LED option. */
     static int front_frames[] = {0, 1};
     static int top_frames[] = {2, 3};
     static int back_frames[] = {2, 4};
-    static int frame_durations[] = {BRICK_ANIM_FRAME_DELAY_MS, BRICK_ANIM_FRAME_DELAY_MS};
+    static int frame_durations[] = {500, 1000};
 
-    brick_sprite->animations[LED_FRONT] = (AnimationInfo){front_frames, frame_durations, 2};
-    brick_sprite->animations[LED_TOP] = (AnimationInfo){top_frames, frame_durations, 2};
-    brick_sprite->animations[LED_BACK] = (AnimationInfo){back_frames, frame_durations, 2};
+    brick_sprite->animations[LED_FRONT] = (AnimationInfo){front_frames, frame_durations, 2, 0, 0};
+    brick_sprite->animations[LED_TOP] = (AnimationInfo){top_frames, frame_durations, 2, 0, 0};
+    brick_sprite->animations[LED_BACK] = (AnimationInfo){back_frames, frame_durations, 2, 0, 0};
     return 0;
 }
 
@@ -508,7 +505,8 @@ void update_sprite_render(SDL_Renderer *renderer, Sprite *sprite, int position_x
 {
     /* Get the current animation and frame to render */
     AnimationInfo *current_animation = &sprite->animations[sprite->current_animation_index];
-    int sprite_sheet_offset = current_animation->frame_indicies[sprite->current_frame_index];
+    int sprite_sheet_offset = current_animation->frame_indicies[current_animation->current_frame_index];
+    int frame_duration = current_animation->frame_duration_millis[current_animation->current_frame_index];
 
     /* Offset the frame index by the width of the sprite to display the next frame */
     SDL_Rect src_rect = {sprite_sheet_offset * sprite->sprite_width, 0, sprite->sprite_width, sprite->sprite_height};
@@ -519,10 +517,10 @@ void update_sprite_render(SDL_Renderer *renderer, Sprite *sprite, int position_x
 
     /* Update the frame index for the next sprite */
     Uint32 current_time_millis = SDL_GetTicks();
-    if (current_time_millis - sprite->last_frame_time_millis >= sprite->frame_delay)
+    if (current_time_millis - current_animation->last_frame_time_millis >= frame_duration)
     {
-        sprite->current_frame_index = (sprite->current_frame_index + 1) % sprite->animations[sprite->current_animation_index].frame_count;
-        sprite->last_frame_time_millis = current_time_millis;
+        current_animation->current_frame_index = (current_animation->current_frame_index + 1) % current_animation->frame_count;
+        current_animation->last_frame_time_millis = current_time_millis;
     }
 }
 

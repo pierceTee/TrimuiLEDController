@@ -24,7 +24,7 @@
 #define WINDOW_TITLE "Led Controller"
 #define BRICK_SPRITE_HEIGHT 500
 #define BRICK_SPRITE_WIDTH 350
-#define BRICK_ANIM_FRAME_DELAY_MS 500
+
 /* Indicator to render current user selection (i.e '>>> Brightness: 100') */
 #define MENU_CARRET ">>> "
 
@@ -131,12 +131,16 @@ typedef struct
  *  frame_indicies = [0, 3, 4]
  *  frame_duration_millis = [1000, 500, 500]
  *  frame_count = 3
+ *  current_frame_index = 0
+ *  last_frame_time_millis = 0
  */
 typedef struct
 {
     int *frame_indicies;
     int *frame_duration_millis;
     int frame_count;
+    int current_frame_index;
+    Uint32 last_frame_time_millis;
 } AnimationInfo;
 
 /* Sprite object that contains everything necessary to render a sprite. */
@@ -145,12 +149,9 @@ typedef struct
     SDL_Texture *sprite_texture;
     AnimationInfo *animations;
     int animation_count;
+    int current_animation_index;
     int sprite_width;
     int sprite_height;
-    int current_frame_index;
-    int current_animation_index;
-    int frame_delay;
-    Uint32 last_frame_time_millis;
 } Sprite;
 
 /* Collection of values for each supported LED setting. */
