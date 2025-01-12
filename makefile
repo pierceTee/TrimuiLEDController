@@ -52,6 +52,7 @@ package:
 	cp -r workspace/assets/ workspace/config_files/* build/* ${ARM_64_RELEASE_DIR}/${PROJECT_NAME}.pak
 	chmod -R u+rx,g+rx,o+rx ${ARM_64_RELEASE_DIR}/${PROJECT_NAME}.pak
 
+
 clean:
 	rm -rf build release
 
