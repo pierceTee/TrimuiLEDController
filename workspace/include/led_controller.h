@@ -123,37 +123,6 @@ typedef struct
     char selected_option_text[STRING_LENGTH];
 } UserInterface;
 
-/* Abstraction of what frames relate to a particular animation.
- *
- * I.E if an animation uses frames 0, 3, 4 of the horizontal sprite sheet,
- * with durations of 1000, 500, 500 milliseconds respectively,
- * it would be stored as:
- *  frame_indicies = [0, 3, 4]
- *  frame_duration_millis = [1000, 500, 500]
- *  frame_count = 3
- *  current_frame_index = 0
- *  last_frame_time_millis = 0
- */
-typedef struct
-{
-    int *frame_indicies;
-    int *frame_duration_millis;
-    int frame_count;
-    int current_frame_index;
-    Uint32 last_frame_time_millis;
-} AnimationInfo;
-
-/* Sprite object that contains everything necessary to render a sprite. */
-typedef struct
-{
-    SDL_Texture *sprite_texture;
-    AnimationInfo *animations;
-    int animation_count;
-    int current_animation_index;
-    int sprite_width;
-    int sprite_height;
-} Sprite;
-
 /* Collection of values for each supported LED setting. */
 typedef struct
 {
@@ -320,30 +289,6 @@ int save_settings(AppState *app_state);
 
 int initialize_brick_sprite(Sprite *brick_sprite, SDL_Renderer *renderer);
 
-void free_sprite(Sprite *sprite);
-
-/**
- * Handles all the logic for preparing the next frame of a sprite animation.
- *
- *  Works by selecting the correct section of the sprite sheet to render and
- *  applying that to a SDL_Rect which is copies to the renderer at the chosen
- *  position. If enough time has elapsed, the frame index is updated to the next
- *  frame in the animation. As with all Sprite Objects, we expect the sprite to be
- *  a horizontal sprite sheet.
- *
- *  Note: Animation index is expected to be set before calling this function.
- *
- * Parameters:
- *      renderer - SDL renderer to draw to.
- *      sprite - SDL surface containing the sprite sheet
- *      position_x - x position to render the sprite
- *      position_y - y position to render the sprite
- *
- *  Returns:
- *     void
- */
-void update_sprite_render(SDL_Renderer *renderer, Sprite *sprite, int position_x, int position_y);
-
 /**
  * Render a text texture to the screen.
  *
@@ -371,19 +316,6 @@ void render_text_texture(SDL_Renderer *renderer, SDL_Texture *texture, int x, in
  *      void
  */
 void render_user_interface(SDL_Renderer *renderer, UserInterface *user_interface, int start_x, int start_y);
-
-/**
- * Update the animation frame index.
- *
- * Parameters:
- *      last_frame_time_millis - time of the last frame in milliseconds
- *      brick_anim_frame_index - index of the current frame
- *      frame_count - total number of frames in the animation
- *
- * Returns:
- *      void
- */
-void update_animation_frame_index(Uint32 *last_frame_time_millis, int *brick_anim_frame_index, int frame_count);
 
 /**
  * Load an image from a file.

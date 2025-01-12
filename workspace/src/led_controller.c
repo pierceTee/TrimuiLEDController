@@ -481,49 +481,6 @@ int initialize_brick_sprite(Sprite *brick_sprite, SDL_Renderer *renderer)
     return 0;
 }
 
-void free_sprite(Sprite *sprite)
-{
-    if (sprite == NULL)
-    { /* Nothing to clean up if sprite is NULL */
-        return;
-    }
-
-    if (sprite->sprite_texture)
-    {
-        SDL_DestroyTexture(sprite->sprite_texture);
-        sprite->sprite_texture = NULL;
-    }
-
-    if (sprite->animations)
-    {
-        free(sprite->animations);
-        sprite->animations = NULL;
-    }
-}
-
-void update_sprite_render(SDL_Renderer *renderer, Sprite *sprite, int position_x, int position_y)
-{
-    /* Get the current animation and frame to render */
-    AnimationInfo *current_animation = &sprite->animations[sprite->current_animation_index];
-    int sprite_sheet_offset = current_animation->frame_indicies[current_animation->current_frame_index];
-    int frame_duration = current_animation->frame_duration_millis[current_animation->current_frame_index];
-
-    /* Offset the frame index by the width of the sprite to display the next frame */
-    SDL_Rect src_rect = {sprite_sheet_offset * sprite->sprite_width, 0, sprite->sprite_width, sprite->sprite_height};
-
-    /* Position the sprite at x, y with the width and height of the sprite and copy to the renderer. */
-    SDL_Rect dst_rect = {position_x, position_y, sprite->sprite_width, sprite->sprite_height};
-    SDL_RenderCopy(renderer, sprite->sprite_texture, &src_rect, &dst_rect);
-
-    /* Update the frame index for the next sprite */
-    Uint32 current_time_millis = SDL_GetTicks();
-    if (current_time_millis - current_animation->last_frame_time_millis >= frame_duration)
-    {
-        current_animation->current_frame_index = (current_animation->current_frame_index + 1) % current_animation->frame_count;
-        current_animation->last_frame_time_millis = current_time_millis;
-    }
-}
-
 void render_text_texture(SDL_Renderer *renderer, SDL_Texture *texture, int x, int y)
 {
     int text_width, text_height;
@@ -542,16 +499,6 @@ void render_user_interface(SDL_Renderer *renderer, UserInterface *user_interface
     render_text_texture(renderer, user_interface->effect_text_texture, start_x + x_offset, start_y + y_offset * 3);
     render_text_texture(renderer, user_interface->duration_text_texture, start_x + x_offset, start_y + y_offset * 4);
     render_text_texture(renderer, user_interface->color_text_texture, start_x + x_offset, start_y + y_offset * 5);
-}
-
-void update_animation_frame_index(Uint32 *last_frame_time_millis, int *brick_anim_frame_index, int frame_count)
-{
-    Uint32 current_time_millis = SDL_GetTicks();
-    if (current_time_millis - *last_frame_time_millis >= BRICK_ANIM_FRAME_DELAY_MS)
-    {
-        *brick_anim_frame_index = (*brick_anim_frame_index + 1) % frame_count;
-        *last_frame_time_millis = current_time_millis;
-    }
 }
 
 SDL_Surface *load_image(char *image_name)

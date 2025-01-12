@@ -87,6 +87,49 @@ void free_sdl_core(CoreSDLComponents *core_components)
     }
 }
 
+void free_sprite(Sprite *sprite)
+{
+    if (sprite == NULL)
+    { /* Nothing to clean up if sprite is NULL */
+        return;
+    }
+
+    if (sprite->sprite_texture)
+    {
+        SDL_DestroyTexture(sprite->sprite_texture);
+        sprite->sprite_texture = NULL;
+    }
+
+    if (sprite->animations)
+    {
+        free(sprite->animations);
+        sprite->animations = NULL;
+    }
+}
+
+void update_sprite_render(SDL_Renderer *renderer, Sprite *sprite, int position_x, int position_y)
+{
+    /* Get the current animation and frame to render */
+    AnimationInfo *current_animation = &sprite->animations[sprite->current_animation_index];
+    int sprite_sheet_offset = current_animation->frame_indicies[current_animation->current_frame_index];
+    int frame_duration = current_animation->frame_duration_millis[current_animation->current_frame_index];
+
+    /* Offset the frame index by the width of the sprite to display the next frame */
+    SDL_Rect src_rect = {sprite_sheet_offset * sprite->sprite_width, 0, sprite->sprite_width, sprite->sprite_height};
+
+    /* Position the sprite at x, y with the width and height of the sprite and copy to the renderer. */
+    SDL_Rect dst_rect = {position_x, position_y, sprite->sprite_width, sprite->sprite_height};
+    SDL_RenderCopy(renderer, sprite->sprite_texture, &src_rect, &dst_rect);
+
+    /* Update the frame index for the next sprite */
+    Uint32 current_time_millis = SDL_GetTicks();
+    if (current_time_millis - current_animation->last_frame_time_millis >= frame_duration)
+    {
+        current_animation->current_frame_index = (current_animation->current_frame_index + 1) % current_animation->frame_count;
+        current_animation->last_frame_time_millis = current_time_millis;
+    }
+}
+
 SDL_Texture *create_sdl_texture_from_image(SDL_Renderer *renderer, char *full_image_path)
 {
     SDL_Surface *surface = IMG_Load(full_image_path);
