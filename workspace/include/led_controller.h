@@ -379,6 +379,17 @@ char *led_to_string(Led led);
 char *led_internal_name(Led led);
 
 /**
+ * Convert an internal LED name to an index.
+ *
+ * Parameters:
+ *      led_name - internal name of the LED
+ *
+ * Returns:
+ *     Led object
+ */
+Led internal_led_name_to_led(char *led_name);
+
+/**
  * Log a debug message.
  *
  * Parameters:
@@ -497,4 +508,7 @@ void write_color_data(FILE *file, const AppState *app_state, const Led led, char
  */
 void update_leds(AppState *app_state);
 
+void install_daemon();
+
+void uninstall_daemon();
 #endif

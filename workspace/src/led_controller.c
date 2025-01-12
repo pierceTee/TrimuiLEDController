@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
     initialize_brick_sprite(&brick_sprite, core_components.renderer);
     /* Render the background */
     SDL_RenderCopy(core_components.renderer, components.backgroundTexture, NULL, NULL);
-
+    install_daemon();
     while (!app_state.should_quit)
     {
         /* Handle events */
@@ -146,6 +146,9 @@ void handle_user_input(InputType user_input, AppState *app_state)
     case POWER:
     case START:
         app_state->should_save_settings = true;
+        break;
+    case SELECT:
+        uninstall_daemon();
         break;
     case B:
         app_state->should_quit = true;
@@ -397,8 +400,10 @@ int read_settings(AppState *app_state)
 
     while (fgets(line, sizeof(line), file))
     {
-        if (sscanf(line, "[LED_%d", &led_index) == 1)
+        char led_name[STRING_LENGTH];
+        if (sscanf(line, "[%[^]]]", led_name) == 1)
         {
+            led_index = internal_led_name_to_led(led_name);
             continue;
         }
         if (led_index >= 0 && led_index < LED_COUNT)
@@ -440,7 +445,7 @@ int save_settings(AppState *app_state)
     SDL_Log("Saving settings to %s ...", SETTINGS_FILE);
     for (int led_index = 0; led_index < LED_COUNT; led_index++)
     {
-        fprintf(file, "[LED_%d_%s]\n", led_index, led_internal_name(led_index));
+        fprintf(file, "[%s]\n", led_internal_name(led_index));
         fprintf(file, "brightness=%d\n", app_state->led_settings[led_index].brightness);
         fprintf(file, "color=0x%06X\n", app_state->led_settings[led_index].color);
         fprintf(file, "duration=%d\n", app_state->led_settings[led_index].duration);
@@ -576,13 +581,33 @@ char *led_internal_name(Led led)
     switch (led)
     {
     case LED_FRONT:
-        return "f";
+        return "f1f2";
     case LED_TOP:
         return "m";
     case LED_BACK:
-        return "b";
+        return "lr";
     default:
         return "UNKNOWN";
+    }
+}
+
+Led internal_led_name_to_led(char *led_name)
+{
+    if (strcmp(led_name, "f1f2") == 0)
+    {
+        return LED_FRONT;
+    }
+    else if (strcmp(led_name, "m") == 0)
+    {
+        return LED_TOP;
+    }
+    else if (strcmp(led_name, "lr") == 0)
+    {
+        return LED_BACK;
+    }
+    else
+    {
+        return -1;
     }
 }
 
@@ -664,13 +689,12 @@ void update_leds(AppState *app_state)
     char filepath[STRING_LENGTH];
     FILE *file = NULL;
 
-    const char *led_names[LED_COUNT] = {"f1f2", "m", "lr"};
     const char *front_led_name_spit[2] = {"f1", "f2"};
 
     app_state->should_update_leds = false;
     for (Led led = 0; led < LED_COUNT; led++)
     {
-        const char *name = led_names[led];
+        const char *name = led_internal_name(led);
 
         SDL_Log(">>> Updating LED %d: %s", led, led_to_string(led));
 
@@ -702,6 +726,16 @@ void update_leds(AppState *app_state)
             write_max_scale_data(file, app_state, led, filepath, name);
         }
     }
+}
+
+void install_daemon()
+{
+    system("sh install.sh");
+}
+
+void uninstall_daemon()
+{
+    system("sh uninstall.sh");
 }
 
 int teardown(CoreSDLComponents *core_components, AdditionalSDLComponents *components, UserInterface *user_interface, Sprite *brick_sprite)
