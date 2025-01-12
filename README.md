@@ -14,14 +14,17 @@ All development work has been performed in a Docker container from [arm64-tg3040
 2. Run `dev_scripts/run-container.sh` to enter into the `arm64-tg3040-toolchain` image.
 3. Run `make` to build the project, then `make package` to package it into the `release/` folder.
 4. To test the application:
-   - **On your host machine:** Select a project from `release/` (e.g., `release/LedControl.pak`) and run the application.
+   - **On your host machine:** Select a project from `release/<host_architecture>/` (e.g., `release/<host_architecture>/LedController`) and run the application crom the command line.
+
    - **On your device:**
      - **MinUI:**
-       1. Copy the project release `<TARGET>.pak` (e.g., `release/LedControl.pak`) to your `<SDCARD>/Tools/tg3040/`.
-       2. On the device, navigate to `Tools`, find your `<TARGET>` entry, and launch.
+       1. Copy the project release `release/arm64/LedControl.pak` to `<SDCARD_ROOT>/Tools/tg3040/`.
+       2. On the device, navigate to `Tools`, find your `LedController` entry, and launch.
      - **Stock OS:**
-       1. Copy the project release `<TARGET>` (e.g., `release/LedControl`) to your `<SDCARD>/Apps/`.
-       2. On the device, navigate to your `<TARGET>` entry and launch.
+       1. Copy the project release `release/arm64/LedController` to your `<SDCARD>/Apps/`.
+       2. On the device, navigate to your `Led Controller` entry in the "apps" section and launch.
+
+Although alternatives are easily attainable, the project is structured with the idea that the user will compile in the docker container found in toolchains. From this container, you can run the application as if it were on the TrimUI device given you've connected your host display to the container (see `dev_scripts/run-container.sh`). You can use a tool like `gdb` to debug the application from your host machine by navigating to your host machines architecture relase directory and manually launching with your desired debugger, just be aware that while all versions of the app *should* behave the same, this isn't gaurenteed to be the same behaviour you see on your TrimUI device.
 
 ## Troubleshooting
 

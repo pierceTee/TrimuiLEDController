@@ -4,31 +4,20 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-/**
- * Handles the initialization of common SDL components necessary for every app
- *
- * Parameters:
- *      core_components - A pre-allocated CoreSDLComponents struct
- *                        to encapsulate common SDL objects
- *      window_title - The title displayed at the top of the window.
- *
- * Returns:
- *      0 on success, 1 on failures
- */
 int initialize_sdl_core(CoreSDLComponents *core_components, char *window_title)
 {
     if (window_title == NULL)
     {
         window_title = "";
     }
-    // Initialize SDL
+    /* Initialize SDL */
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
     {
         SDL_Log("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
         return 1;
     }
 
-    // Initialize window
+    /* Initialize window */
     core_components->window = SDL_CreateWindow(window_title,
                                                SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                                core_components->window_width, core_components->window_height,
@@ -40,7 +29,7 @@ int initialize_sdl_core(CoreSDLComponents *core_components, char *window_title)
         return 1;
     }
 
-    // Initialize renderer
+    /* Initialize renderer */
     core_components->renderer = SDL_CreateRenderer(core_components->window, -1, SDL_RENDERER_ACCELERATED);
     if (!core_components->renderer)
     {
@@ -50,7 +39,7 @@ int initialize_sdl_core(CoreSDLComponents *core_components, char *window_title)
         return 1;
     }
 
-    // Initialize controller
+    /* Initialize controller */
     if (SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER) < 0)
     {
         SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
@@ -76,7 +65,7 @@ int initialize_sdl_core(CoreSDLComponents *core_components, char *window_title)
         SDL_Log("No game controller available");
     }
 
-    // Clear screen
+    /* Clear screen */
     SDL_RenderClear(core_components->renderer);
 
     return 0;
@@ -98,16 +87,121 @@ void free_sdl_core(CoreSDLComponents *core_components)
     }
 }
 
-/**
- * Converts an SDL event to an InputType to simplify input handling
- *
- * Parameters:
- *      event - The SDL event to convert
- *      verbose - If true, prints the input type to the console
- *
- * Returns:
- *      InputType enum value if the event is supported, UNKNOWN otherwise
- */
+void free_sprite(Sprite *sprite)
+{
+    if (sprite == NULL)
+    { /* Nothing to clean up if sprite is NULL */
+        return;
+    }
+
+    if (sprite->sprite_texture)
+    {
+        SDL_DestroyTexture(sprite->sprite_texture);
+        sprite->sprite_texture = NULL;
+    }
+
+    if (sprite->animations)
+    {
+        free(sprite->animations);
+        sprite->animations = NULL;
+    }
+}
+
+void update_sprite_render(SDL_Renderer *renderer, Sprite *sprite, int position_x, int position_y)
+{
+    /* Get the current animation and frame to render */
+    AnimationInfo *current_animation = &sprite->animations[sprite->current_animation_index];
+    int sprite_sheet_offset = current_animation->frame_indicies[current_animation->current_frame_index];
+    int frame_duration = current_animation->frame_duration_millis[current_animation->current_frame_index];
+
+    /* Offset the frame index by the width of the sprite to display the next frame */
+    SDL_Rect src_rect = {sprite_sheet_offset * sprite->sprite_width, 0, sprite->sprite_width, sprite->sprite_height};
+
+    /* Position the sprite at x, y with the width and height of the sprite and copy to the renderer. */
+    SDL_Rect dst_rect = {position_x, position_y, sprite->sprite_width, sprite->sprite_height};
+    SDL_RenderCopy(renderer, sprite->sprite_texture, &src_rect, &dst_rect);
+
+    /* Update the frame index for the next sprite */
+    Uint32 current_time_millis = SDL_GetTicks();
+    if (current_time_millis - current_animation->last_frame_time_millis >= frame_duration)
+    {
+        current_animation->current_frame_index = (current_animation->current_frame_index + 1) % current_animation->frame_count;
+        current_animation->last_frame_time_millis = current_time_millis;
+    }
+}
+
+SDL_Texture *create_sdl_texture_from_image(SDL_Renderer *renderer, char *full_image_path)
+{
+    SDL_Surface *surface = IMG_Load(full_image_path);
+    if (!surface)
+    {
+        SDL_Log("Unable to load image %s ! IMG_Error: %s\n", full_image_path, IMG_GetError());
+        return NULL;
+    }
+
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_FreeSurface(surface);
+    if (!texture)
+    {
+        SDL_Log("Unable to create image texture! SDL_Error: %s\n", SDL_GetError());
+    }
+    return texture;
+}
+
+SDL_Texture *create_text_texture(SDL_Renderer *renderer, TTF_Font *font, const SDL_Color *text_color, const SDL_Color *shadow_color, const char *text)
+{
+    /* Define colors for shadow and main text */
+    if (shadow_color == NULL)
+    {
+        SDL_Color default_shadow_color = {0, 0, 0, 1};
+        shadow_color = &default_shadow_color;
+    }
+    SDL_Surface *shadow_surface = TTF_RenderText_Solid(font, text, *shadow_color);
+    if (!shadow_surface)
+    {
+        return NULL;
+    }
+
+    /* Render main text surface */
+    SDL_Surface *text_surface = TTF_RenderText_Solid(font, text, *text_color);
+    if (!text_surface)
+    {
+        SDL_FreeSurface(text_surface);
+        return NULL;
+    }
+
+    /* Create a larger surface to combine shadow and main text */
+    int shadow_offset = 4;
+    int width = text_surface->w + shadow_offset;
+    int height = text_surface->h + shadow_offset;
+    SDL_Surface *combined_surface = SDL_CreateRGBSurface(0, width, height, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
+
+    if (!combined_surface)
+    {
+        SDL_FreeSurface(shadow_surface);
+        SDL_FreeSurface(text_surface);
+        return NULL;
+    }
+
+    /* Blit the shadow first (offset by shadow_offset) */
+    SDL_Rect shadow_rect = {shadow_offset, shadow_offset, shadow_surface->w, shadow_surface->h};
+    SDL_BlitSurface(shadow_surface, NULL, combined_surface, &shadow_rect);
+
+    /* Blit the main text on top (without offset) */
+    SDL_Rect text_rect = {0, 0, text_surface->w, text_surface->h};
+    SDL_BlitSurface(text_surface, NULL, combined_surface, &text_rect);
+
+    /* Create texture from combined surface */
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, combined_surface);
+
+    /* Free the surfaces */
+    SDL_FreeSurface(shadow_surface);
+    SDL_FreeSurface(text_surface);
+    SDL_FreeSurface(combined_surface);
+
+    return texture;
+}
+
 InputType sdl_event_to_input_type(SDL_Event *event, bool verbose)
 {
     if (is_supported_input_event(event->type))
@@ -227,15 +321,6 @@ InputType sdl_event_to_input_type(SDL_Event *event, bool verbose)
     return UNKNOWN;
 };
 
-/**
- * Checks if an SDL event is supported by the input handling system
- *
- * Parameters:
- *      event_type - The SDL event type to check
- *
- * Returns:
- *      true if the event is supported by the input handling system, false otherwise
- */
 bool is_supported_input_event(Uint32 event_type)
 {
     const Uint32 supported_events[] = {
@@ -261,15 +346,6 @@ bool is_supported_input_event(Uint32 event_type)
     return false;
 }
 
-/**
- * Gets the name of an SDL_Keycode
- *
- * Parameters:
- *      key - The SDL_Keycode to get the name of
- *
- * Returns:
- *      A string containing the name of the key
- */
 const char *get_input_type_name(Uint32 inputType)
 {
     switch (inputType)
@@ -315,15 +391,6 @@ const char *get_input_type_name(Uint32 inputType)
     }
 }
 
-/**
- * Gets the name of an SDL_Keycode
- *
- * Parameters:
- *      key - The SDL_Keycode to get the name of
- *
- * Returns:
- *      A string containing the name of the key
- */
 const char *get_event_name(Uint32 eventType)
 {
     switch (eventType)
@@ -433,15 +500,6 @@ const char *get_event_name(Uint32 eventType)
     }
 }
 
-/**
- * Gets the name of an SDL_GameControllerButton
- *
- * Parameters:
- *      button - The SDL_GameControllerButton to get the name of
- *
- * Returns:
- *      A string containing the name of the button
- */
 const char *get_button_name(SDL_GameControllerButton button)
 {
     switch (button)
@@ -485,15 +543,6 @@ const char *get_button_name(SDL_GameControllerButton button)
     }
 }
 
-/**
- * Gets the name of an SDL_Keycode
- *
- * Parameters:
- *      key - The SDL_Keycode to get the name of
- *
- * Returns:
- *      A string containing the name of the key
- */
 const char *get_key_name(SDL_Keycode key)
 {
     switch (key)
