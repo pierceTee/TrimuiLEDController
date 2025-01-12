@@ -148,6 +148,60 @@ SDL_Texture *create_sdl_texture_from_image(SDL_Renderer *renderer, char *full_im
     return texture;
 }
 
+SDL_Texture *create_text_texture(SDL_Renderer *renderer, TTF_Font *font, const SDL_Color *text_color, const SDL_Color *shadow_color, const char *text)
+{
+    /* Define colors for shadow and main text */
+    if (shadow_color == NULL)
+    {
+        SDL_Color default_shadow_color = {0, 0, 0, 1};
+        shadow_color = &default_shadow_color;
+    }
+    SDL_Surface *shadow_surface = TTF_RenderText_Solid(font, text, *shadow_color);
+    if (!shadow_surface)
+    {
+        return NULL;
+    }
+
+    /* Render main text surface */
+    SDL_Surface *text_surface = TTF_RenderText_Solid(font, text, *text_color);
+    if (!text_surface)
+    {
+        SDL_FreeSurface(text_surface);
+        return NULL;
+    }
+
+    /* Create a larger surface to combine shadow and main text */
+    int shadow_offset = 4;
+    int width = text_surface->w + shadow_offset;
+    int height = text_surface->h + shadow_offset;
+    SDL_Surface *combined_surface = SDL_CreateRGBSurface(0, width, height, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
+
+    if (!combined_surface)
+    {
+        SDL_FreeSurface(shadow_surface);
+        SDL_FreeSurface(text_surface);
+        return NULL;
+    }
+
+    /* Blit the shadow first (offset by shadow_offset) */
+    SDL_Rect shadow_rect = {shadow_offset, shadow_offset, shadow_surface->w, shadow_surface->h};
+    SDL_BlitSurface(shadow_surface, NULL, combined_surface, &shadow_rect);
+
+    /* Blit the main text on top (without offset) */
+    SDL_Rect text_rect = {0, 0, text_surface->w, text_surface->h};
+    SDL_BlitSurface(text_surface, NULL, combined_surface, &text_rect);
+
+    /* Create texture from combined surface */
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, combined_surface);
+
+    /* Free the surfaces */
+    SDL_FreeSurface(shadow_surface);
+    SDL_FreeSurface(text_surface);
+    SDL_FreeSurface(combined_surface);
+
+    return texture;
+}
+
 InputType sdl_event_to_input_type(SDL_Event *event, bool verbose)
 {
     if (is_supported_input_event(event->type))

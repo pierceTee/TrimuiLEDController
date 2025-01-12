@@ -289,13 +289,13 @@ int initialize_app_state(AppState *app_state)
 void initialize_user_interface(UserInterface *user_interface, CoreSDLComponents *core_components, AdditionalSDLComponents *components)
 {
     snprintf(user_interface->onscreen_log_message, sizeof(user_interface->onscreen_log_message), "Welcome to the LED Controller!");
-    user_interface->logging_text_texture = create_text_texture(core_components->renderer, components->font, user_interface->onscreen_log_message);
-    user_interface->brightness_text_texture = create_text_texture(core_components->renderer, components->font, user_interface->brightness_text);
-    user_interface->effect_text_texture = create_text_texture(core_components->renderer, components->font, user_interface->effect_text);
-    user_interface->color_text_texture = create_text_texture(core_components->renderer, components->font, user_interface->color_text);
-    user_interface->duration_text_texture = create_text_texture(core_components->renderer, components->font, user_interface->duration_text);
-    user_interface->selected_led_texture = create_text_texture(core_components->renderer, components->font, user_interface->selected_led_text);
-    user_interface->selected_option_texture = create_text_texture(core_components->renderer, components->font, user_interface->selected_option_text);
+    user_interface->logging_text_texture = create_text_texture(core_components->renderer, components->font, &text_color, &text_shadow_color, user_interface->onscreen_log_message);
+    user_interface->brightness_text_texture = create_text_texture(core_components->renderer, components->font, &text_color, &text_shadow_color, user_interface->brightness_text);
+    user_interface->effect_text_texture = create_text_texture(core_components->renderer, components->font, &text_color, &text_shadow_color, user_interface->effect_text);
+    user_interface->color_text_texture = create_text_texture(core_components->renderer, components->font, &text_color, &text_shadow_color, user_interface->color_text);
+    user_interface->duration_text_texture = create_text_texture(core_components->renderer, components->font, &text_color, &text_shadow_color, user_interface->duration_text);
+    user_interface->selected_led_texture = create_text_texture(core_components->renderer, components->font, &text_color, &text_shadow_color, user_interface->selected_led_text);
+    user_interface->selected_option_texture = create_text_texture(core_components->renderer, components->font, &text_color, &text_shadow_color, user_interface->selected_option_text);
 }
 
 void free_user_interface(UserInterface *user_interface)
@@ -344,24 +344,25 @@ void free_user_interface(UserInterface *user_interface)
 
 void update_user_interface_text(UserInterface *user_interface, const CoreSDLComponents *core_components, const AdditionalSDLComponents *components, const AppState *app_state)
 {
+
     LedSettingOption selected_setting = app_state->selected_setting;
     snprintf(user_interface->brightness_text, sizeof(user_interface->brightness_text), "%sBrightness: %d", selected_setting == BRIGHTNESS ? MENU_CARRET : "", app_state->led_settings[app_state->selected_led].brightness);
-    user_interface->brightness_text_texture = create_text_texture(core_components->renderer, components->font, user_interface->brightness_text);
+    user_interface->brightness_text_texture = create_text_texture(core_components->renderer, components->font, &text_color, &text_shadow_color, user_interface->brightness_text);
 
     snprintf(user_interface->effect_text, sizeof(user_interface->effect_text), "%sEffect:     %s", selected_setting == EFFECT ? MENU_CARRET : "", animation_effect_to_string(app_state->led_settings[app_state->selected_led].effect));
-    user_interface->effect_text_texture = create_text_texture(core_components->renderer, components->font, user_interface->effect_text);
+    user_interface->effect_text_texture = create_text_texture(core_components->renderer, components->font, &text_color, &text_shadow_color, user_interface->effect_text);
 
     snprintf(user_interface->color_text, sizeof(user_interface->color_text), "%sColor:      0x%x", selected_setting == COLOR ? MENU_CARRET : "", app_state->led_settings[app_state->selected_led].color);
-    user_interface->color_text_texture = create_text_texture(core_components->renderer, components->font, user_interface->color_text);
+    user_interface->color_text_texture = create_text_texture(core_components->renderer, components->font, &text_color, &text_shadow_color, user_interface->color_text);
 
     snprintf(user_interface->duration_text, sizeof(user_interface->duration_text), "%sDuration:  %dms", selected_setting == DURATION ? MENU_CARRET : "", app_state->led_settings[app_state->selected_led].duration);
-    user_interface->duration_text_texture = create_text_texture(core_components->renderer, components->font, user_interface->duration_text);
+    user_interface->duration_text_texture = create_text_texture(core_components->renderer, components->font, &text_color, &text_shadow_color, user_interface->duration_text);
 
     snprintf(user_interface->selected_led_text, sizeof(user_interface->selected_led_text), "[ L1 ] %s [ R1 ]", led_to_string(app_state->selected_led));
-    user_interface->selected_led_texture = create_text_texture(core_components->renderer, components->font, user_interface->selected_led_text);
+    user_interface->selected_led_texture = create_text_texture(core_components->renderer, components->font, &text_color, &text_shadow_color, user_interface->selected_led_text);
 
     snprintf(user_interface->selected_option_text, sizeof(user_interface->selected_option_text), "Selected Option: %s", led_setting_option_to_string(app_state->selected_setting));
-    user_interface->selected_option_texture = create_text_texture(core_components->renderer, components->font, user_interface->selected_option_text);
+    user_interface->selected_option_texture = create_text_texture(core_components->renderer, components->font, &text_color, &text_shadow_color, user_interface->selected_option_text);
 }
 
 int clamp(int value, int min, int max)
@@ -511,62 +512,6 @@ SDL_Surface *load_image(char *image_name)
         SDL_Log("Unable to load image %s ! IMG_Error: %s\n", image_name, IMG_GetError());
     }
     return surface;
-}
-
-SDL_Texture *create_text_texture(SDL_Renderer *renderer, TTF_Font *font, const char *text)
-{
-    /* Define colors for shadow and main text */
-
-    /* Semi-transparent black for shadow */
-    SDL_Color shadow_color = {0, 0, 0, 128};
-
-    /* Eggshell white color for main text */
-    SDL_Color text_color = {255, 239, 186, 255};
-
-    SDL_Surface *shadow_surface = TTF_RenderText_Solid(font, text, shadow_color);
-    if (!shadow_surface)
-    {
-        return NULL;
-    }
-
-    /* Render main text surface */
-    SDL_Surface *text_surface = TTF_RenderText_Solid(font, text, text_color);
-    if (!text_surface)
-    {
-        SDL_FreeSurface(shadow_surface);
-        return NULL;
-    }
-
-    /* Create a larger surface to combine shadow and main text */
-    int shadow_offset = 4;
-    int width = text_surface->w + shadow_offset;
-    int height = text_surface->h + shadow_offset;
-    SDL_Surface *combined_surface = SDL_CreateRGBSurface(0, width, height, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
-
-    if (!combined_surface)
-    {
-        SDL_FreeSurface(shadow_surface);
-        SDL_FreeSurface(text_surface);
-        return NULL;
-    }
-
-    /* Blit the shadow first (offset by shadow_offset) */
-    SDL_Rect shadow_rect = {shadow_offset, shadow_offset, shadow_surface->w, shadow_surface->h};
-    SDL_BlitSurface(shadow_surface, NULL, combined_surface, &shadow_rect);
-
-    /* Blit the main text on top (without offset) */
-    SDL_Rect text_rect = {0, 0, text_surface->w, text_surface->h};
-    SDL_BlitSurface(text_surface, NULL, combined_surface, &text_rect);
-
-    /* Create texture from combined surface */
-    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, combined_surface);
-
-    /* Free the surfaces */
-    SDL_FreeSurface(shadow_surface);
-    SDL_FreeSurface(text_surface);
-    SDL_FreeSurface(combined_surface);
-
-    return texture;
 }
 
 char *animation_effect_to_string(AnimationEffect effect)

@@ -156,6 +156,21 @@ InputType sdl_event_to_input_type(SDL_Event *event, bool verbose);
 SDL_Texture *create_sdl_texture_from_image(SDL_Renderer *renderer, char *full_image_path);
 
 /**
+ * Create a text texture from a string.
+ *
+ * Parameters:
+ *      renderer - SDL renderer to draw to.
+ *      font - TTF font to use for the text
+ *      text_color - color of the text
+ *      shadow_color - color of the text drop-shadow (leave null disable drop shadow rendering)
+ *      text - string containing the text
+ *
+ * Returns:
+ *      SDL_Texture containing the text
+ */
+SDL_Texture *create_text_texture(SDL_Renderer *renderer, TTF_Font *font, const SDL_Color *text_color, const SDL_Color *shadow_color, const char *text);
+
+/**
  * Checks if an SDL event is supported by the input handling system
  *
  * Parameters:

@@ -50,6 +50,12 @@
 /* Application Consts */
 #define STRING_LENGTH 256
 
+/* Eggshell white color for main text */
+const SDL_Color text_color = {255, 239, 186, 255};
+
+/* Semi-transparent black for shadow */
+const SDL_Color text_shadow_color = {0, 0, 0, 128};
+
 /* The different Led clusters we support */
 typedef enum
 {
@@ -327,19 +333,6 @@ void render_user_interface(SDL_Renderer *renderer, UserInterface *user_interface
  *      SDL_Surface containing the image
  */
 SDL_Surface *load_image(char *image_name);
-
-/**
- * Create a text texture from a string.
- *
- * Parameters:
- *      renderer - SDL renderer to draw to.
- *      font - TTF font to use for the text
- *      text - string containing the text
- *
- * Returns:
- *      SDL_Texture containing the text
- */
-SDL_Texture *create_text_texture(SDL_Renderer *renderer, TTF_Font *font, const char *text);
 
 /**
  * Convert an animation effect to a string.
