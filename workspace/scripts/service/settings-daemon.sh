@@ -1,10 +1,13 @@
 #!/bin/bash
 
-export SETTINGS_FILE="/etc/led_controller/settings.ini"
+
+export INSALL_DIR="/etc/led_controller"
+export SETTINGS_FILE="$INSALL_DIR/settings.ini"
 export SYS_FILE_PATH="/sys/class/led_anim"
 export SERVICE_PATH="/etc/led_controller"
 export BASE_LED_PATH="/sys/class/led_anim"
 export SCRIPT_NAME=$(basename "$0")
+export LOG_FILE="$INSALL_DIR/settings_daemon.log"
 
 # Function to apply settings for a specific LED
 apply_led_settings() {
@@ -14,7 +17,7 @@ apply_led_settings() {
     local duration=$4
     local effect=$5
 
-    echo "[$SCRIPT_NAME]: Writing $led LED information to configuration files ..."
+    echo "[$SCRIPT_NAME]: Writing $led LED information to configuration files ..." | tee -a "$LOG_FILE"
     if [[ $led == "f1f2" ]]; then
         echo $brightness > "$SYS_FILE_PATH/max_scale_f1"
         echo $color > "$SYS_FILE_PATH/effect_rgb_hex_f2"
@@ -29,12 +32,12 @@ apply_led_settings() {
 }
 
 # == Start of the script ==
-echo "[$SCRIPT_NAME]: LED settings daemon started ..."
+echo "[$SCRIPT_NAME]: LED settings daemon started ..." | tee -a "$LOG_FILE"
 
 # Enable write permissions on LED files
-chmod -v a+w $LED_PATH/* 
+chmod -v a+w $LED_PATH/* | tee -a "$LOG_FILE"
 
-echo "[$SCRIPT_NAME]: Writing LED information to configuration files ..."
+echo "[$SCRIPT_NAME]: Writing LED information to configuration files ..." | tee -a "$LOG_FILE"
 # Read settings from the settings file and apply them
 while IFS= read -r line; do
     if [[ $line =~ ^\[([a-zA-Z0-9]+)\]$ ]]; then
@@ -52,8 +55,8 @@ while IFS= read -r line; do
 done < "$SETTINGS_FILE"
 
 # Disable write permissions on LED files
-chmod -v a-w $LED_PATH/*
+chmod -v a-w $LED_PATH/* | tee -a "$LOG_FILE"
 
-echo "[$SCRIPT_NAME]: Finished writing LED information to configuration files ..."
-echo "[$SCRIPT_NAME]: LED settings daemon stopped ..."
-echo "[$SCRIPT_NAME]: exiting ..."
+echo "[$SCRIPT_NAME]: Finished writing LED information to configuration files ..." | tee -a "$LOG_FILE"
+echo "[$SCRIPT_NAME]: LED settings daemon stopped ..." | tee -a "$LOG_FILE"
+echo "[$SCRIPT_NAME]: exiting ..." | tee -a "$LOG_FILE"
