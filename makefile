@@ -3,14 +3,14 @@ ARM_64_CC=gcc
 ARM_64_BUILD_DIR=build/arm64
 ARM_64_RELEASE_DIR=release/arm64
 ARM_64_CFLAGS= -I/usr/include/aarch64-linux-gnu/SDL2 -Iworkspace/include -Wall
-ARM_64_LDFLAGS= -L/usr/lib/aarch64-linux-gnu -lSDL2 -lSDL2_ttf -lSDL2_image -lm
+ARM_64_LDFLAGS= -L/usr/lib/aarch64-linux-gnu -lSDL2 -lSDL2_ttf -lSDL2_image -lm -g
 
 # Compiler and flags for x86
 X86_CC=x86_64-linux-gnu-gcc
 X86_BUILD_DIR=build/x86
 X86_RELEASE_DIR=release/x86
 X86_CFLAGS = -I/usr/include/x86_64-linux-gnu/SDL2 -Iworkspace/include -Wall
-X86_LDFLAGS = -L/usr/lib/x86_64-linux-gnu -lSDL2 -lSDL2_ttf -lSDL2_image -lm
+X86_LDFLAGS = -L/usr/lib/x86_64-linux-gnu -lSDL2 -lSDL2_ttf -lSDL2_image -lm -g
 
 # General flags
 PROJECT_NAME=LedController
