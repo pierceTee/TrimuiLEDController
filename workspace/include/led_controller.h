@@ -46,7 +46,7 @@
 /* How much to increment the brightness by when increasing/decreasing */
 #define BRIGHTNESS_INCREMENT 10
 /* How many colors we support */
-#define NUM_COLORS 20
+#define NUM_COLORS 17
 /* Application Consts */
 #define STRING_LENGTH 256
 
@@ -148,29 +148,43 @@ typedef struct
     LedSettings led_settings[LED_COUNT];
 } AppState;
 
-const uint32_t bright_colors[] = {
+const uint32_t colors[] = {
+    // Reds
     0xFF0000, // Red
-    0x00FF00, // Green
-    0x0000FF, // Blue
-    0xFFFF00, // Yellow
-    0x00FFFF, // Cyan
-    0xFF00FF, // Magenta
-    0xFFFFFF, // White
-    0xFF8000, // Orange
-    0x8000FF, // Purple
-    0x80FF00, // Lime
-    0x00FF80, // Aqua
-    0x0080FF, // Sky Blue
-    0xFF0080, // Hot Pink
-    0xFF80FF, // Light Pink
-    0x80FF80, // Light Green
-    0x8080FF, // Light Blue
-    0xFFFF80, // Light Yellow
-    0x80FFFF, // Light Cyan
     0xFF8080, // Light Red
-    0xFF80C0  // Light Magenta
+    0x800000, // Maroon
+    // Pinks
+    0xFF0080, // Hot Pink
+    // Oranges
+    0xFF8000, // Orange
+
+    // Greens
+    0x00FF00, // Green
+    0x00FF80, // Aqua
+
+    // Yellows
+    0xFFFF00, // Yellow
+    0x808000, // Olive
+
+    // Blues
+    0x0000FF, // Blue
+    0x0080FF, // Sky Blue
+    0x000080, // Navy
+
+    // Cyans
+    0x00FFFF, // Cyan
+    0x008080, // Teal
+
+    // Magentas
+    0xFF00FF, // Magenta
+    0xFF80C0, // Light Magenta
+
+    // Whites
+    0xFFFFFF, // White
+
 };
 
+const int num_color = sizeof(colors) / sizeof(colors[0]);
 /**
  * Manage what to do with user input.
  *
@@ -508,7 +522,6 @@ void write_color_data(FILE *file, const AppState *app_state, const Led led, char
  *      void
  */
 void update_leds(AppState *app_state);
-
 
 void install_daemon();
 
