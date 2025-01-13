@@ -1,0 +1,24 @@
+#!/bin/sh /etc/rc.common
+
+# LED Settings Daemon
+# Run after system starts but before the trimUI OS
+# For more information on how daemons work on Trimui devices, 
+# see /etc/rc.common usage, and /etc/init.d for examples.
+START=98
+STOP=99
+
+DAEMON_PATH=/etc/led_controller/settings-daemon.sh
+DAEMON_USER=root
+PIDFILE=/var/run/$DAEMON_NAME.pid
+LOG_FILE=/etc/led_controller/settings_daemon.log
+
+start() {
+    printf "Starting LED SETTINGS DAEMON..."
+    ./etc/led_controller/settings-daemon.sh
+    echo "done"
+}
+
+stop_() {
+    printf "Stopping LED SETTINGS DAEMON"
+    killall led-settings-daemon
+}
