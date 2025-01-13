@@ -123,6 +123,7 @@ int main(int argc, char *argv[])
     save_settings(&app_state);
     update_leds(&app_state);
     install_daemon();
+  
     return teardown(&core_components, &components, &user_interface, &brick_sprite);
 }
 

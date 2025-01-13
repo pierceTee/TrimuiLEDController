@@ -390,6 +390,7 @@ char *led_internal_name(Led led);
 Led internal_led_name_to_led(char *led_name);
 
 /**
+
  * Log a debug message.
  *
  * Parameters:
@@ -507,6 +508,7 @@ void write_color_data(FILE *file, const AppState *app_state, const Led led, char
  *      void
  */
 void update_leds(AppState *app_state);
+
 
 void install_daemon();
 

@@ -1,0 +1,30 @@
+name: Makefile CI
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: configure test environment
+      run: sudo make deps
+
+    - name: Install dependencies
+      run: make
+
+    - name: Make project
+      run: make
+
+    - name: Package project
+      run: make package
