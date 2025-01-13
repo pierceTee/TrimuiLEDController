@@ -1,6 +1,6 @@
 # TrimUI LED Controller
 
-A application to configure the LEDs on the TrimUI Brick (smart pro support WIP).
+An application to configure the LEDs on the TrimUI Brick (smart pro support WIP).
 
 ## Usage Guide
 
@@ -37,7 +37,7 @@ Although alternatives are easily attainable, the project is structured with the 
 - **Compiler issues:** Try running `dev_scripts/setup-toolchain.sh` followed by `dev_scripts/setup-env.sh`.
 - **Docker issues:** Try running `./toolchains/arm64-tg3040-toolchain/make shell` then`./dev_scripts/run-container.sh`
 
-## References/findings
+## References/Findings
 All logic is derrived from the help file found in `/sys/class/led_anim/`
 ```
 [TRIMUI LED Animation driver]
@@ -78,11 +78,15 @@ All logic is derrived from the help file found in `/sys/class/led_anim/`
 The tricky part was getting a daemon running on boot. First, `systemctl` isn't installed on the device so it's 
 not as easy as starting/stopping with that. Daemons in `/etc/init.d` also use a different format than I've seen before, they're very primitave and seem to order themselves by a `START` variable (with 0 being first and running in order from there). I've done my best to run the daemon at the right time to make the changes feel seemless (i.e the OS doesn't control the LEDs at any point) by placing the order just before the `runtrimui` service. Run `grep -H "START=" /etc/init.d/* | awk -F 'START=' '{print $2, $0}' | sort -n | cut -d' ' -f2-` on the device to see the order of boot services for more context.
 
+Getting a functioning daemon was a bit of a pain but here are a few things that helped me see where I was going wrong: 
+  - The brick uses an OpenWrt `/etc/rc.common` script to 'link' 'start', 'stop', 'restart', 'reload', 'boot', 'shutdown', and 'enable' services. So using this script will ensure compatability with whatever the OS is expecting. 
+  - Check the examples in `/etc/init.d` a few times and cross reference with what `/etc/rc.common` things are a little fast and loose (`printf` and `echo` both work? so do `start`, `start_service`, `start_service_remote`, and `start_service_daemon` [see `/etc/init.d/log`]). I should probably look into this standard to better understand what's going on under the hood.
+
 1/12/2025: Turns out there's a directory `usr/trimui/bin` (should have looked at the minUI launch scripts a bit more thoroughly). In there is a script  `usr/trimui/bin/init_leds.sh`. I'd bet we can just override this for an easy install method. There's a `usr/trimui/bin/low_battery_led.sh` that I should also overrwrite to lock/unlock permission in toggling the leds
 P.s: there's loads more scripts in here, this might be the key to unlcoking more functionality. 
 UPDATE: overwritting this script didn't seem to do anything :(
 
-Looks like MinUI actually does exactly what we're doing here, 
+Looks like MinUI actually does exactly what I'm thinking of doing here, 
 they move `usr/trimui/bin/runtrimui.sh` `usr/trimui/bin/runtrimui-original.sh`  and replace it with `skeleton/BOOT/trimui/app/runtrimui.sh`
 which then launches MinUI's `.tmp_update/updater` (or `runtrimui-original.sh` if the SDCARD isn't found). 
 
