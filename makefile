@@ -45,8 +45,6 @@ clean:
 
 deps:
 	# Ensure both target architecture's package libaries are available
-	sudo dpkg --add-architecture amd64
-	sudo dpkg --add-architecture arm64
 	sudo apt-get update
 
 	# Install SDL libraries for both architectures
