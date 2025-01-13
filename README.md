@@ -30,13 +30,14 @@ To Build manually:
 
 Although alternatives are easily attainable, the project is structured with the idea that the user will compile in the docker container found in toolchains. From this container, you can run the application as if it were on the TrimUI device given you've connected your host display to the container (see `dev_scripts/run-container.sh`). You can use a tool like `gdb` to debug the application from your host machine by navigating to your host machines architecture relase directory and manually launching with your desired debugger, just be aware that while all versions of the app *should* behave the same, this isn't gaurenteed to be the same behaviour you see on your TrimUI device.
 
+
 ## Troubleshooting
 
 - **Dependency issues:** Try running `make deps`.
 - **Compiler issues:** Try running `dev_scripts/setup-toolchain.sh` followed by `dev_scripts/setup-env.sh`.
 - **Docker issues:** Try running `./toolchains/arm64-tg3040-toolchain/make shell` then`./dev_scripts/run-container.sh`
 
-## References
+## References/findings
 All logic is derrived from the help file found in `/sys/class/led_anim/`
 ```
 [TRIMUI LED Animation driver]
@@ -73,6 +74,37 @@ All logic is derrived from the help file found in `/sys/class/led_anim/`
     anim_frames_enable : toggle of frames anim function
     anim_frames_override_m_enable: toggle of middle LED in frames anim function.
 ```
+
+The tricky part was getting a daemon running on boot. First, `systemctl` isn't installed on the device so it's 
+not as easy as starting/stopping with that. Daemons in `/etc/init.d` also use a different format than I've seen before, they're very primitave and seem to order themselves by a `START` variable (with 0 being first and running in order from there). I've done my best to run the daemon at the right time to make the changes feel seemless (i.e the OS doesn't control the LEDs at any point) by placing the order just before the `runtrimui` service. Run `grep -H "START=" /etc/init.d/* | awk -F 'START=' '{print $2, $0}' | sort -n | cut -d' ' -f2-` on the device to see the order of boot services for more context.
+
+1/12/2025: Turns out there's a directory `usr/trimui/bin` (should have looked at the minUI launch scripts a bit more thoroughly). In there is a script  `usr/trimui/bin/init_leds.sh`. I'd bet we can just override this for an easy install method. There's a `usr/trimui/bin/low_battery_led.sh` that I should also overrwrite to lock/unlock permission in toggling the leds
+P.s: there's loads more scripts in here, this might be the key to unlcoking more functionality. 
+UPDATE: overwritting this script didn't seem to do anything :(
+
+Looks like MinUI actually does exactly what we're doing here, 
+they move `usr/trimui/bin/runtrimui.sh` `usr/trimui/bin/runtrimui-original.sh`  and replace it with `skeleton/BOOT/trimui/app/runtrimui.sh`
+which then launches MinUI's `.tmp_update/updater` (or `runtrimui-original.sh` if the SDCARD isn't found). 
+
+`usr/trimui/bin/trimui_inputd` is the input daemon written in c so maybe this is where runtime daemons go?
+
+Tons of more interesting things in `usr/trimui`, all the stock apps are in `usr/trimui/apps` and can easily be moved the SDCARD for use in other OSs, alternatively we can move our app in here for a "permenant" install. `usr/trimui/gamecontrollerdb.txt` seemingly has the mapping of controllers to SDL inputs, if we wanted to add support for a certain controller, it would go there.
+
+`usr/trimui/lib` has all the installed libaries listed here
+```
+
+libSDL-1.2.so.0             libSDL_image-1.2.so.0
+libSDL-1.2.so.0.11.4        libSDL_image-1.2.so.0.8.4
+libSDL2-2.0.so.0            libSDL_mixer-1.2.so.0
+libSDL2-2.0.so.0.3000.8     libSDL_mixer-1.2.so.0.12.0
+libSDL2_image-2.0.so.0      libSDL_ttf-2.0.so.0
+libSDL2_image-2.0.so.0.2.3  libSDL_ttf-2.0.so.0.10.1
+libSDL2_mixer-2.0.so.0      libgamename.so
+libSDL2_mixer-2.0.so.0.0.1  libshmvar.so
+libSDL2_ttf-2.0.so.0        libtmenu.so
+libSDL2_ttf-2.0.so.0.14.1
+```
+I wounder if we could swap in some binaries to support more applications? 
 
 ## Final Thoughts
 

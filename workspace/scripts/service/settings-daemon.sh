@@ -1,13 +1,12 @@
-#!/bin/bash
+#!/bin/sh
 
-
-export INSALL_DIR="/etc/led_controller"
-export SETTINGS_FILE="$INSALL_DIR/settings.ini"
+export INSTALL_DIR="/etc/led_controller"
+export SETTINGS_FILE="$INSTALL_DIR/settings.ini"
 export SYS_FILE_PATH="/sys/class/led_anim"
 export SERVICE_PATH="/etc/led_controller"
 export BASE_LED_PATH="/sys/class/led_anim"
 export SCRIPT_NAME=$(basename "$0")
-export LOG_FILE="$INSALL_DIR/settings_daemon.log"
+export LOG_FILE="$INSTALL_DIR/settings_daemon.log"
 
 # Function to apply settings for a specific LED
 apply_led_settings() {
@@ -18,11 +17,14 @@ apply_led_settings() {
     local effect=$5
 
     echo "[$SCRIPT_NAME]: Writing $led LED information to configuration files ..." | tee -a "$LOG_FILE"
-    if [[ $led == "f1f2" ]]; then
-        echo $brightness > "$SYS_FILE_PATH/max_scale_f1"
+    if [ "$led" = "f1f2" ]; then
+        echo $brightness > "$SYS_FILE_PATH/max_scale_$led"
+         echo $color > "$SYS_FILE_PATH/effect_rgb_hex_f1"
         echo $color > "$SYS_FILE_PATH/effect_rgb_hex_f2"
         echo $duration > "$SYS_FILE_PATH/effect_duration_f1"
+        echo $duration > "$SYS_FILE_PATH/effect_duration_f2"
         echo $effect > "$SYS_FILE_PATH/effect_f1"
+         echo $effect > "$SYS_FILE_PATH/effect_f2"
     else
         echo $brightness > "$SYS_FILE_PATH/max_scale_$led"
         echo $color > "$SYS_FILE_PATH/effect_rgb_hex_$led"
@@ -35,27 +37,27 @@ apply_led_settings() {
 echo "[$SCRIPT_NAME]: LED settings daemon started ..." | tee -a "$LOG_FILE"
 
 # Enable write permissions on LED files
-chmod -v a+w $LED_PATH/* | tee -a "$LOG_FILE"
+chmod a+w $BASE_LED_PATH/* | tee -a "$LOG_FILE"
 
 echo "[$SCRIPT_NAME]: Writing LED information to configuration files ..." | tee -a "$LOG_FILE"
 # Read settings from the settings file and apply them
 while IFS= read -r line; do
-    if [[ $line =~ ^\[([a-zA-Z0-9]+)\]$ ]]; then
-        led=${BASH_REMATCH[1]}
-    elif [[ $line =~ ^brightness=([0-9]+)$ ]]; then
-        brightness=${BASH_REMATCH[1]}
-    elif [[ $line =~ ^color=0x([0-9A-Fa-f]+)$ ]]; then
-        color=${BASH_REMATCH[1]}
-    elif [[ $line =~ ^duration=([0-9]+)$ ]]; then
-        duration=${BASH_REMATCH[1]}
-    elif [[ $line =~ ^effect=([0-9]+)$ ]]; then
-        effect=${BASH_REMATCH[1]}
+    if echo "$line" | grep -qE '^\[([a-zA-Z0-9]+)\]$'; then
+        led=$(echo "$line" | sed -n 's/^\[\([a-zA-Z0-9]\+\)\]$/\1/p')
+    elif echo "$line" | grep -qE '^brightness=([0-9]+)$'; then
+        brightness=$(echo "$line" | sed -n 's/^brightness=\([0-9]\+\)$/\1/p')
+    elif echo "$line" | grep -qE '^color=0x([0-9A-Fa-f]+)$'; then
+        color=$(echo "$line" | sed -n 's/^color=0x\([0-9A-Fa-f]\+\)$/\1/p')
+    elif echo "$line" | grep -qE '^duration=([0-9]+)$'; then
+        duration=$(echo "$line" | sed -n 's/^duration=\([0-9]\+\)$/\1/p')
+    elif echo "$line" | grep -qE '^effect=([0-9]+)$'; then
+        effect=$(echo "$line" | sed -n 's/^effect=\([0-9]\+\)$/\1/p')
         apply_led_settings $led $brightness $color $duration $effect
     fi
 done < "$SETTINGS_FILE"
 
 # Disable write permissions on LED files
-chmod -v a-w $LED_PATH/* | tee -a "$LOG_FILE"
+chmod a-w $BASE_LED_PATH/* | tee -a "$LOG_FILE"
 
 echo "[$SCRIPT_NAME]: Finished writing LED information to configuration files ..." | tee -a "$LOG_FILE"
 echo "[$SCRIPT_NAME]: LED settings daemon stopped ..." | tee -a "$LOG_FILE"

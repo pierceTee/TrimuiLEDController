@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
     initialize_brick_sprite(&brick_sprite, core_components.renderer);
     /* Render the background */
     SDL_RenderCopy(core_components.renderer, components.backgroundTexture, NULL, NULL);
-    install_daemon();
+
     while (!app_state.should_quit)
     {
         /* Handle events */
@@ -122,6 +122,7 @@ int main(int argc, char *argv[])
 
     save_settings(&app_state);
     update_leds(&app_state);
+    install_daemon();
     return teardown(&core_components, &components, &user_interface, &brick_sprite);
 }
 
