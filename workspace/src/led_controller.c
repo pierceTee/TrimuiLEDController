@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
     save_settings(&app_state);
     update_leds(&app_state);
     install_daemon();
-  
+
     return teardown(&core_components, &components, &user_interface, &brick_sprite);
 }
 
@@ -205,11 +205,11 @@ void handle_change_setting(AppState *app_state, int change)
         break;
     case COLOR:
     {
-        /* Find the current color index in bright_colors */
+        /* Find the current color index in colors */
         int current_color_index = -1;
-        for (int i = 0; i < NUM_COLORS; i++)
+        for (int i = 0; i < num_color; i++)
         {
-            if (bright_colors[i] == selected_led_settings->color)
+            if (colors[i] == selected_led_settings->color)
             {
                 current_color_index = i;
                 break;
@@ -223,10 +223,10 @@ void handle_change_setting(AppState *app_state, int change)
         }
 
         /* Update the color index based on the change */
-        current_color_index = (current_color_index + change + NUM_COLORS) % NUM_COLORS;
+        current_color_index = (current_color_index + change + num_color) % num_color;
 
         /* Set the new color */
-        selected_led_settings->color = bright_colors[current_color_index];
+        selected_led_settings->color = colors[current_color_index];
     }
     break;
 
