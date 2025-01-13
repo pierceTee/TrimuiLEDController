@@ -129,6 +129,7 @@ Pierce
 - [ro8inmorgan](https://github.com/ro8inmorgan): Their [LedControl](https://github.com/ro8inmorgan/LedControl) application helped me fix some bugs/functionality in this application.
 
 # TODO 
+- Refine colors.
 - Basic menu with options to: turn off/on all LEDs, uninstall all sysemd daemons.
 - Smart pro support.
 - Split sprite rendering code into its own file for future use.
