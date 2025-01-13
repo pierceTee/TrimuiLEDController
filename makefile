@@ -48,14 +48,7 @@ deps:
 	sudo apt-get update
 
 	# Install SDL libraries for both architectures
-	sudo apt install -y libsdl2-dev:amd64 libsdl2-ttf-dev:amd64 libsdl2-image-dev:amd64
-	sudo apt install -y libsdl2-dev:arm64 libsdl2-ttf-dev:arm64 libsdl2-image-dev:arm64
-
-	# link the x86_64 libraries to the correct location 
-	sudo ln -s /usr/lib/x86_64-linux-gnu/libSDL2-2.0.so.0 /usr/lib/x86_64-linux-gnu/libSDL2.so
-	sudo ln -s /usr/lib/x86_64-linux-gnu/libSDL2_ttf-2.0.so.0 /usr/lib/x86_64-linux-gnu/libSDL2_ttf.so
-	sudo ln -s /usr/lib/x86_64-linux-gnu/libSDL2_image-2.0.so.0 /usr/lib/x86_64-linux-gnu/libSDL2_image.so
+	sudo apt install -y libsdl2-dev libsdl2-ttf-dev libsdl2-image-dev
 
 	# Install the cross-compilation tools
 	sudo apt-get install -y gcc g++
-	sudo apt-get install -y gcc-x86-64-linux-gnu g++-x86-64-linux-gnu
