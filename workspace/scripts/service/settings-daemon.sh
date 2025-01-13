@@ -19,12 +19,12 @@ apply_led_settings() {
     echo "[$SCRIPT_NAME]: Writing $led LED information to configuration files ..." | tee -a "$LOG_FILE"
     if [ "$led" = "f1f2" ]; then
         echo $brightness > "$SYS_FILE_PATH/max_scale_$led"
-         echo $color > "$SYS_FILE_PATH/effect_rgb_hex_f1"
+        echo $color > "$SYS_FILE_PATH/effect_rgb_hex_f1"
         echo $color > "$SYS_FILE_PATH/effect_rgb_hex_f2"
         echo $duration > "$SYS_FILE_PATH/effect_duration_f1"
         echo $duration > "$SYS_FILE_PATH/effect_duration_f2"
         echo $effect > "$SYS_FILE_PATH/effect_f1"
-         echo $effect > "$SYS_FILE_PATH/effect_f2"
+        echo $effect > "$SYS_FILE_PATH/effect_f2"
     else
         echo $brightness > "$SYS_FILE_PATH/max_scale_$led"
         echo $color > "$SYS_FILE_PATH/effect_rgb_hex_$led"

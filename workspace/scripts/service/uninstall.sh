@@ -2,7 +2,7 @@
 
 export SERVICE_PATH="/etc/led_controller"
 export SCRIPT_NAME=$(basename "$0")
-export LOG_FILE="/etc/led_controller/setting_daemon.log"
+export LOG_FILE="/led_controller.log"
 
 echo "[`date '+%Y-%m-%d %H:%M:%S'`][$SCRIPT_NAME]: Removing all led_controller files from system ..."  >> $LOG_FILE
 /etc/init.d/led-settings-daemon stop

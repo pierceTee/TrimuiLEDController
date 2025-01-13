@@ -7,7 +7,7 @@ CFLAGS = -I/usr/include/SDL2 -Iworkspace/include -Wall
 LDFLAGS = -L/usr/lib -lSDL2 -lSDL2_ttf -lSDL2_image -lm -g
 
 # General flags
-PROJECT_NAME=TrimUILedController
+PROJECT_NAME=LedController
 
 .PHONY: all clean deps
 
