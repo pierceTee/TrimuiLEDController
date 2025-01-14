@@ -1,10 +1,17 @@
 # TrimUI LED Controller
 
-An application to configure the LEDs on the TrimUI Brick (smart pro support WIP).
+### An application to configure the LEDs on the TrimUI Brick (smart pro support WIP). 
+#### *Configure all LED brightness, color, and effect!*
+![Configure all LED brightness, color, and effect!](./github/main_application_image.png)
+
+#### *Use shortcuts for quick actions!*
+![Use shortcuts for quick actions](./github/start_menu.png)
 
 ## Usage Guide
+Follow the dev guide to build the package. 
 
-Usage and Installation and release instructions will be provided once bugs are ironed out.
+Settings will remain across sleep/wake/boot cycles until you manually uninstall through the menu.
+
 
 ## Development Guide
 
