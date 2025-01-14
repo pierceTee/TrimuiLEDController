@@ -151,6 +151,7 @@ void render_colored_square(AppState *app_state, CoreSDLComponents *core_componen
     SDL_SetRenderDrawColor(core_components->renderer, 0, 0, 0, 255);
     SDL_RenderFillRect(core_components->renderer, &black_rect);
     /* Adjusted to match the new black_rect */
+
     SDL_Rect color_rect = {25, 101, BRICK_SPRITE_WIDTH - 10, BRICK_SPRITE_HEIGHT - 6};
     int32_t color = app_state->led_settings[app_state->selected_led].color;
     SDL_SetRenderDrawColor(core_components->renderer, (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF, 255);
