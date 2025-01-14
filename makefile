@@ -21,20 +21,20 @@ package: all
 	mkdir -p $(RELEASE_DIR)
 
 	# Create general project package
-	mkdir -p $(RELEASE_DIR)/$(PROJECT_NAME)
-	mkdir -p $(RELEASE_DIR)/$(PROJECT_NAME).pak
+	mkdir -p $(RELEASE_DIR)/$(PROJECT_NAME)/scripts
+	mkdir -p $(RELEASE_DIR)/$(PROJECT_NAME).pak/scripts
 
 	# Copy the launch script to the release directory
-	cp -r workspace/scripts/led-controller-launch.sh $(RELEASE_DIR)/$(PROJECT_NAME)/launch.sh
-	cp -r workspace/scripts/led-controller-launch-minui.sh $(RELEASE_DIR)/$(PROJECT_NAME).pak/launch.sh
+	cp -r workspace/scripts/launch/led-controller-launch.sh $(RELEASE_DIR)/$(PROJECT_NAME)/launch.sh
+	cp -r workspace/scripts/launch/led-controller-launch-minui.sh $(RELEASE_DIR)/$(PROJECT_NAME).pak/launch.sh
 
 	# Copy the service scripts to the release directory
-	cp workspace/scripts/service/* $(RELEASE_DIR)/$(PROJECT_NAME)
-	cp workspace/scripts/service/* $(RELEASE_DIR)/$(PROJECT_NAME).pak
+	cp workspace/scripts/runtime/* $(RELEASE_DIR)/$(PROJECT_NAME)/scripts
+	cp workspace/scripts/runtime/* $(RELEASE_DIR)/$(PROJECT_NAME).pak/scripts
 	
-	# Copy the assets, config files, and build files to the release directory
-	cp -r workspace/assets/ $(BUILD_DIR)/* workspace/config_files/* $(RELEASE_DIR)/$(PROJECT_NAME)
-	cp -r workspace/assets/ $(BUILD_DIR)/* workspace/config_files/* $(RELEASE_DIR)/$(PROJECT_NAME).pak
+	# Copy the assets, service files, config files, and build files to the release directory
+	cp -r workspace/assets/ workspace/service/ $(BUILD_DIR)/* workspace/config_files/* $(RELEASE_DIR)/$(PROJECT_NAME)
+	cp -r workspace/assets/ workspace/service/ $(BUILD_DIR)/* workspace/config_files/* $(RELEASE_DIR)/$(PROJECT_NAME).pak
 
 	# Make the release directory executable by all users
 	chmod -R u+rx,g+rx,o+rx $(RELEASE_DIR)/$(PROJECT_NAME)

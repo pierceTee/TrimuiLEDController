@@ -6,6 +6,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 int main(int argc, char *argv[])
 {
@@ -309,6 +312,7 @@ void handle_menu_select(AppState *app_state, MenuOption selected_menu_option)
             app_state->led_settings[led].effect = STATIC;
         }
         update_leds(app_state);
+        system("sh scripts/turn_on_all_leds.sh");
     }
 
     break;
@@ -319,9 +323,10 @@ void handle_menu_select(AppState *app_state, MenuOption selected_menu_option)
             app_state->led_settings[led].effect = DISABLE;
         }
         update_leds(app_state);
+        system("sh scripts/turn_off_all_leds.sh");
         break;
     case UNINSTALL:
-        system("sh actions.sh uninstall");
+        uninstall_daemon();
         app_state->should_install_daemon = false;
         app_state->should_quit = true;
         break;
@@ -859,7 +864,6 @@ void write_max_scale_data(FILE *file, const AppState *app_state, const Led led, 
 void write_effect_data(FILE *file, const AppState *app_state, const Led led, char *filepath, const char *suffix)
 {
     snprintf(filepath, STRING_LENGTH, "%s/effect_%s", SYS_FILE_PATH, suffix);
-    SDL_Log("Opening file: %s", filepath);
     file = fopen(filepath, "w");
     if (file != NULL)
     {
@@ -875,7 +879,6 @@ void write_effect_data(FILE *file, const AppState *app_state, const Led led, cha
 void write_effect_duration_data(FILE *file, const AppState *app_state, const Led led, char *filepath, const char *suffix)
 {
     snprintf(filepath, STRING_LENGTH, "%s/effect_duration_%s", SYS_FILE_PATH, suffix);
-    SDL_Log("Opening file: %s", filepath);
     file = fopen(filepath, "w");
     if (file != NULL)
     {
@@ -891,7 +894,6 @@ void write_effect_duration_data(FILE *file, const AppState *app_state, const Led
 void write_color_data(FILE *file, const AppState *app_state, const Led led, char *filepath, const char *suffix)
 {
     snprintf(filepath, STRING_LENGTH, "%s/effect_rgb_hex_%s", SYS_FILE_PATH, suffix);
-    SDL_Log("Opening file: %s", filepath);
     file = fopen(filepath, "w");
     if (file != NULL)
     {
@@ -917,8 +919,6 @@ void update_leds(AppState *app_state)
     for (Led led = 0; led < LED_COUNT; led++)
     {
         const char *name = led_internal_name(led);
-
-        SDL_Log(">>> Updating LED %d: %s", led, led_to_string(led));
 
         /* Update everything else */
         if (led == LED_FRONT)
@@ -952,12 +952,12 @@ void update_leds(AppState *app_state)
 
 void install_daemon()
 {
-    system("sh actions.sh install");
+    system("sh scripts/install.sh");
 }
 
 void uninstall_daemon()
 {
-    system("sh actions.sh uninstall");
+    system("sh scripts/uninstall.sh");
 }
 
 int teardown(CoreSDLComponents *core_components, AdditionalSDLComponents *components,
