@@ -23,8 +23,8 @@
 #define WINDOW_HEIGHT 768
 #define FONT_SIZE 34
 #define WINDOW_TITLE "Led Controller"
-#define BRICK_SPRITE_HEIGHT 500
-#define BRICK_SPRITE_WIDTH 350
+#define BRICK_SPRITE_HEIGHT 512
+#define BRICK_SPRITE_WIDTH 512
 
 /* Indicator to render current user selection (i.e '>>> Brightness: 100') */
 #define MENU_CARRET_LEFT "<  "
