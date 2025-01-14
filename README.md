@@ -2,6 +2,7 @@
 
 ### An application to configure the LEDs on the TrimUI Brick (smart pro support WIP). 
 #### *Configure all LED brightness, color, and effect!*
+
 ![Configure all LED brightness, color, and effect!](./github/led_controller_main.gif)
 
 #### *Use shortcuts for quick actions!*
