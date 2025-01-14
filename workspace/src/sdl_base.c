@@ -73,15 +73,15 @@ int initialize_sdl_core(CoreSDLComponents *core_components, char *window_title)
 
 void free_sdl_core(CoreSDLComponents *core_components)
 {
-    if (core_components->controller)
+    if (core_components->controller != NULL)
     {
         SDL_GameControllerClose(core_components->controller);
     }
-    if (core_components->renderer)
+    if (core_components->renderer != NULL)
     {
         SDL_DestroyRenderer(core_components->renderer);
     }
-    if (core_components->window)
+    if (core_components->window != NULL)
     {
         SDL_DestroyWindow(core_components->window);
     }
@@ -94,13 +94,13 @@ void free_sprite(Sprite *sprite)
         return;
     }
 
-    if (sprite->sprite_texture)
+    if (sprite->sprite_texture != NULL)
     {
         SDL_DestroyTexture(sprite->sprite_texture);
         sprite->sprite_texture = NULL;
     }
 
-    if (sprite->animations)
+    if (sprite->animations != NULL)
     {
         free(sprite->animations);
         sprite->animations = NULL;

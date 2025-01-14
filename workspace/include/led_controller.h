@@ -8,7 +8,8 @@
 
 // ** File locations **
 #define IMAGE_DIR "assets/images"
-#define BACKGROUND_IMAGE_PATH "assets/images/main_menu.png"
+#define BACKGROUND_IMAGE_PATH "assets/images/background.png"
+#define MENU_IMAGE_PATH "assets/images/main_menu.png"
 #define BRICK_SPRITE_SHEET_PATH "assets/images/brick_sprite_sheet.png"
 #define FONT_PATH "assets/retro_gaming.ttf"
 #define SETTINGS_FILE "settings.ini"
@@ -26,13 +27,18 @@
 #define BRICK_SPRITE_WIDTH 350
 
 /* Indicator to render current user selection (i.e '>>> Brightness: 100') */
-#define MENU_CARRET ">>> "
+#define MENU_CARRET_LEFT "<  "
+#define MENU_CARRET_RIGHT "  >"
 
 //  ** Settings Consts **
 /* FRONT, TOP, BACK */
 #define LED_COUNT 3
 /* brightness, effect, color, duration */
-#define LED_SETTINGS_COUNT 4
+#define LED_SETTINGS_COUNT 5
+
+/* enable all, disable all, uninstall, quit*/
+#define MENU_OPTION_COUNT 4
+
 /* DISABLE, LINEAR, BREATH, SNIFF, STATIC, BLINK1, BLINK2, BLINK3 */
 #define ANIMATION_EFFECT_COUNT 8
 /* 0xRRGGBBAA */
@@ -81,53 +87,42 @@ typedef enum
 /* The different LED functions we support modifying */
 typedef enum
 {
+    SELECTED_LED,
     BRIGHTNESS,
     EFFECT,
     DURATION,
     COLOR,
 } LedSettingOption;
 
+/* The different menu options we provide */
+typedef enum
+{
+    ENABLE_ALL,
+    DISABLE_ALL,
+    UNINSTALL,
+    QUIT,
+} MenuOption;
+
 /* SDL Extended set of components required by this application not covered in sdl_base::CoreSDLComponents */
 typedef struct
 {
     SDL_Texture *backgroundTexture;
+    SDL_Texture *menuTexture;
     TTF_Font *font;
 } AdditionalSDLComponents;
 
 /* Cluster of all mutable user-interface related objects */
 typedef struct
 {
-    /* Texture for rendering on screen logging text */
-    SDL_Texture *logging_text_texture;
-    /* Texture for rendering brightness value */
-    SDL_Texture *brightness_text_texture;
-    /* Texture for rendering effect value */
-    SDL_Texture *effect_text_texture;
-    /* Texture for rendering color value */
-    SDL_Texture *color_text_texture;
-    /* Texture for rendering duration value */
-    SDL_Texture *duration_text_texture;
-    /* Texture for rendering selected LED */
-    SDL_Texture *selected_led_texture;
-    /* Texture for rendering selected option */
-    SDL_Texture *selected_option_texture;
-    /* Log message we display in console if verbose logging is enabled */
-    char log_message[STRING_LENGTH];
-    /* Log message we display on screen, gets updated based on user input */
-    char onscreen_log_message[STRING_LENGTH];
-    /* Text that displays the brightness value information */
-    char brightness_text[STRING_LENGTH];
-    /* Text that displays the effect value information */
-    char effect_text[STRING_LENGTH];
-    /* Text that displays the color value information */
-    char color_text[STRING_LENGTH];
-    /* Text that displays the duration value information */
-    char duration_text[STRING_LENGTH];
-    /* Text that displays the selected LED information */
-    char selected_led_text[STRING_LENGTH];
-    /* Text that displays the selected option information */
-    char selected_option_text[STRING_LENGTH];
-} UserInterface;
+    SDL_Color text_shadow_color;
+    SDL_Color text_color;
+    SDL_Color text_highlight_color;
+    SDL_Texture **menu_text_textures;
+    char **menu_text;
+    int item_count;
+    int string_length;
+
+} SelectableMenuItems;
 
 /* Collection of values for each supported LED setting. */
 typedef struct
@@ -138,13 +133,22 @@ typedef struct
     int duration;
 } LedSettings;
 
+typedef enum
+{
+    CONFIG_PAGE,
+    MENU_PAGE,
+} ApplicationPage;
+
 typedef struct
 {
     bool should_save_settings;
     bool should_update_leds;
     bool should_quit;
+    bool should_install_daemon;
+    ApplicationPage current_page;
     Led selected_led;
     LedSettingOption selected_setting;
+    MenuOption selected_menu_option;
     LedSettings led_settings[LED_COUNT];
 } AppState;
 
@@ -184,6 +188,8 @@ const uint32_t colors[] = {
 
 };
 
+char *color_to_string(uint32_t color);
+
 const int num_color = sizeof(colors) / sizeof(colors[0]);
 /**
  * Manage what to do with user input.
@@ -213,6 +219,7 @@ void handle_user_input(InputType user_input, AppState *app_state);
  */
 void handle_change_setting(AppState *app_state, int change);
 
+void handle_menu_select(AppState *app_state, MenuOption selected_menu_option);
 /**
  * Initialize any SDL components needed by the application that aren't
  * already initialized by initialize_sdl_core.
@@ -241,28 +248,30 @@ int initialize_app_state(AppState *app_state);
  * Initialize the user interface.
  *
  * Parameters:
- *    user_interface - user interface object to initialize
+ *    menu_items - user interface object to initialize
  *    core_components - core SDL components
  *    components - SDL components specific to this application
  *
  * Returns:
  *   void
  */
-void initialize_user_interface(UserInterface *user_interface, CoreSDLComponents *core_components, AdditionalSDLComponents *components);
+void initialize_config_page_ui(SelectableMenuItems *menu_items, CoreSDLComponents *core_components, AdditionalSDLComponents *components);
+
+void initialize_menu_ui(SelectableMenuItems *menu_items, CoreSDLComponents *core_components, AdditionalSDLComponents *components);
 
 /**
- * Frees all sub-objects of the user_interface
+ * Frees all sub-objects of the menu_items
  *
  * Can be used for cleanup and to clear the text off the screen in
  * preparation for the next frame.
  */
-void free_user_interface(UserInterface *user_interface);
+void free_menu_items(SelectableMenuItems *menu_items);
 
 /**
  * Update the user interface text.
  *
  * Parameters:
- *    user_interface - user interface object to update
+ *    menu_items - user interface object to update
  *    core_components - core SDL components
  *    components - SDL components specific to this application
  *    app_state - state object with user information we're updating.
@@ -270,8 +279,9 @@ void free_user_interface(UserInterface *user_interface);
  * Returns:
  *   void
  */
-void update_user_interface_text(UserInterface *user_interface, const CoreSDLComponents *core_components, const AdditionalSDLComponents *components, const AppState *app_state);
+void update_menu_ui_text(SelectableMenuItems *menu_items, const CoreSDLComponents *core_components, const AdditionalSDLComponents *components, const AppState *app_state);
 
+void update_config_page_ui_text(SelectableMenuItems *menu_items, const CoreSDLComponents *core_components, const AdditionalSDLComponents *components, const AppState *app_state);
 /**
  * Clamp a value between a minimum and maximum value.
  *
@@ -328,14 +338,14 @@ void render_text_texture(SDL_Renderer *renderer, SDL_Texture *texture, int x, in
  *
  * Parameters:
  *      renderer - SDL renderer to draw to.
- *      user_interface - user interface object to render
+ *      menu_items - user interface object to render
  *      start_x - x position to start rendering
  *      start_y - y position to start rendering
  *
  * Returns:
  *      void
  */
-void render_user_interface(SDL_Renderer *renderer, UserInterface *user_interface, int start_x, int start_y);
+void render_menu_items(SDL_Renderer *renderer, SelectableMenuItems *menu_items, int start_x, int start_y);
 
 /**
  * Load an image from a file.
@@ -369,6 +379,8 @@ char *animation_effect_to_string(AnimationEffect effect);
  *      string containing the LED setting option
  */
 char *led_setting_option_to_string(LedSettingOption setting);
+
+char *menu_option_to_string(MenuOption option);
 
 /**
  * Convert a LED to a string.
@@ -442,12 +454,13 @@ void render_colored_square(AppState *app_state, CoreSDLComponents *core_componen
  * Parameters:
  *      core_components - core SDL components
  *      components - SDL components specific to this application
- *      user_interface - user interface object to teardown
+ *      menu_items - user interface object to teardown
  *
  * Returns:
  *      0 on success, 1 on failure
  */
-int teardown(CoreSDLComponents *core_components, AdditionalSDLComponents *components, UserInterface *user_interface, Sprite *brick_sprite);
+int teardown(CoreSDLComponents *core_components, AdditionalSDLComponents *components,
+             SelectableMenuItems *config_menu_items, SelectableMenuItems *main_menu_items, Sprite *brick_sprite);
 /**
  * Write the max scale data to a file.
  *

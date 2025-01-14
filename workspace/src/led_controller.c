@@ -22,7 +22,10 @@ int main(int argc, char *argv[])
     AppState app_state;
 
     /* The collection of user interface related objects. */
-    UserInterface user_interface;
+    SelectableMenuItems config_page_ui;
+
+    /* The collection of user interface related objects. */
+    SelectableMenuItems menu_page_ui;
 
     Sprite brick_sprite;
     /* The last user input converted from SDL_Event. */
@@ -49,14 +52,16 @@ int main(int argc, char *argv[])
         SDL_Log("Failed to initialize SDL, exiting...\n");
         return 1;
     }
-    initialize_user_interface(&user_interface, &core_components, &components);
-    update_user_interface_text(&user_interface, &core_components, &components, &app_state);
+    initialize_config_page_ui(&config_page_ui, &core_components, &components);
+    initialize_menu_ui(&menu_page_ui, &core_components, &components);
+
+    update_config_page_ui_text(&config_page_ui, &core_components, &components, &app_state);
+    update_menu_ui_text(&menu_page_ui, &core_components, &components, &app_state);
 
     /* Initialize sprites */
     initialize_brick_sprite(&brick_sprite, core_components.renderer);
     /* Render the background */
     SDL_RenderCopy(core_components.renderer, components.backgroundTexture, NULL, NULL);
-
     while (!app_state.should_quit)
     {
         /* Handle events */
@@ -90,7 +95,8 @@ int main(int argc, char *argv[])
                     save_settings(&app_state);
                 }
                 /* Update UI text textures */
-                update_user_interface_text(&user_interface, &core_components, &components, &app_state);
+                update_config_page_ui_text(&config_page_ui, &core_components, &components, &app_state);
+                update_menu_ui_text(&menu_page_ui, &core_components, &components, &app_state);
             }
         }
 
@@ -111,8 +117,13 @@ int main(int argc, char *argv[])
         update_sprite_render(core_components.renderer, &brick_sprite, 100, 100);
 
         /* Render the interactable user interface. */
-        render_user_interface(core_components.renderer, &user_interface, 500, 200);
+        render_menu_items(core_components.renderer, &config_page_ui, 500, 150);
 
+        if (app_state.current_page == MENU_PAGE)
+        { /* Render menu last on stack if it needs to show*/
+            SDL_RenderCopy(core_components.renderer, components.menuTexture, NULL, NULL);
+            render_menu_items(core_components.renderer, &menu_page_ui, 300, 250);
+        }
         /* Main render call to update screen */
         SDL_RenderPresent(core_components.renderer);
 
@@ -122,9 +133,11 @@ int main(int argc, char *argv[])
 
     save_settings(&app_state);
     update_leds(&app_state);
-    install_daemon();
-
-    return teardown(&core_components, &components, &user_interface, &brick_sprite);
+    if (app_state.should_install_daemon)
+    {
+        install_daemon();
+    }
+    return teardown(&core_components, &components, &config_page_ui, &menu_page_ui, &brick_sprite);
 }
 
 void render_colored_square(AppState *app_state, CoreSDLComponents *core_components)
@@ -136,53 +149,97 @@ void render_colored_square(AppState *app_state, CoreSDLComponents *core_componen
     SDL_RenderFillRect(core_components->renderer, &black_rect);
     /* Adjusted to match the new black_rect */
     SDL_Rect color_rect = {105, 101, BRICK_SPRITE_WIDTH - 10, BRICK_SPRITE_HEIGHT - 6};
-    uint32_t color = app_state->led_settings[app_state->selected_led].color;
+    int32_t color = app_state->led_settings[app_state->selected_led].color;
     SDL_SetRenderDrawColor(core_components->renderer, (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF, 255);
     SDL_RenderFillRect(core_components->renderer, &color_rect);
 }
 
 void handle_user_input(InputType user_input, AppState *app_state)
 {
-    switch (user_input)
+    switch (app_state->current_page)
     {
-    case POWER:
-    case START:
-        app_state->should_save_settings = true;
-        break;
-    case SELECT:
-        uninstall_daemon();
-        break;
-    case B:
-        app_state->should_quit = true;
-        break;
-    case DPAD_UP:
-        /* Switch between settings */
-        app_state->selected_setting = (app_state->selected_setting - 1) % LED_SETTINGS_COUNT;
-        break;
-    case DPAD_DOWN:
-        /* Switch between settings */
-        app_state->selected_setting = (app_state->selected_setting + 1 + LED_SETTINGS_COUNT) % LED_SETTINGS_COUNT;
-        break;
-    case DPAD_RIGHT:
-        handle_change_setting(app_state, 1);
-        app_state->should_update_leds = true;
-        break;
-    case DPAD_LEFT:
-        handle_change_setting(app_state, -1);
-        app_state->should_update_leds = true;
-        break;
-    case L1:
-    case L2:
-    case L3:
-        app_state->selected_led = (app_state->selected_led - 1 + LED_COUNT) % LED_COUNT;
-        break;
-    case R1:
-    case R2:
-    case R3:
-        app_state->selected_led = (app_state->selected_led + 1) % LED_COUNT;
-        break;
-    default:
-        break;
+    case CONFIG_PAGE:
+    {
+        switch (user_input)
+        {
+        case POWER:
+            /* power button safely exits app */
+            app_state->should_quit = true;
+            break;
+        case START:
+        case SELECT:
+            app_state->current_page = MENU_PAGE;
+            break;
+            break;
+        case B:
+            switch (app_state->current_page)
+            {
+            case MENU_PAGE:
+                /* close menu */
+                app_state->current_page = CONFIG_PAGE;
+                break;
+            case CONFIG_PAGE:
+                /* exit app */
+                app_state->should_quit = true;
+                break;
+            }
+            break;
+        case DPAD_UP:
+            /* Switch between settings */
+            app_state->selected_setting = (app_state->selected_setting - 1) % LED_SETTINGS_COUNT;
+            break;
+        case DPAD_DOWN:
+            /* Switch between settings */
+            app_state->selected_setting = (app_state->selected_setting + 1 + LED_SETTINGS_COUNT) % LED_SETTINGS_COUNT;
+            break;
+        case DPAD_RIGHT:
+            handle_change_setting(app_state, 1);
+            app_state->should_update_leds = true;
+            break;
+        case DPAD_LEFT:
+            handle_change_setting(app_state, -1);
+            app_state->should_update_leds = true;
+            break;
+        case L1:
+        case L2:
+        case L3:
+            app_state->selected_led = (app_state->selected_led - 1 + LED_COUNT) % LED_COUNT;
+            break;
+        case R1:
+        case R2:
+        case R3:
+            app_state->selected_led = (app_state->selected_led + 1) % LED_COUNT;
+            break;
+        default:
+            break;
+        }
+    }
+    break;
+    case MENU_PAGE:
+    {
+        switch (user_input)
+        {
+        case START:
+        case SELECT:
+        case B:
+            app_state->current_page = CONFIG_PAGE;
+            break;
+        case A:
+            handle_menu_select(app_state, app_state->selected_menu_option);
+            break;
+        case DPAD_UP:
+            /* Switch between settings */
+            app_state->selected_menu_option = (app_state->selected_menu_option - 1) % MENU_OPTION_COUNT;
+            break;
+        case DPAD_DOWN:
+            /* Switch between settings */
+            app_state->selected_menu_option = (app_state->selected_menu_option + 1 + MENU_OPTION_COUNT) % MENU_OPTION_COUNT;
+            break;
+        default:
+            break;
+        }
+    }
+    break;
     }
 }
 
@@ -191,6 +248,11 @@ void handle_change_setting(AppState *app_state, int change)
     LedSettings *selected_led_settings = &app_state->led_settings[app_state->selected_led];
     switch (app_state->selected_setting)
     {
+    case SELECTED_LED:
+    {
+        app_state->selected_led = (app_state->selected_led - change + LED_COUNT) % LED_COUNT;
+        break;
+    }
     case BRIGHTNESS:
     {
         /* Bounds checking because looping around from max brightness to 0 brightness feels bad. */
@@ -235,6 +297,41 @@ void handle_change_setting(AppState *app_state, int change)
     }
 }
 
+void handle_menu_select(AppState *app_state, MenuOption selected_menu_option)
+{
+    switch (selected_menu_option)
+    {
+    case ENABLE_ALL:
+    {
+        for (Led led = 0; led < LED_COUNT; led++)
+        {
+            app_state->led_settings[led].brightness = MAX_BRIGHTNESS;
+            app_state->led_settings[led].effect = STATIC;
+        }
+        update_leds(app_state);
+    }
+
+    break;
+    case DISABLE_ALL:
+        for (Led led = 0; led < LED_COUNT; led++)
+        {
+            app_state->led_settings[led].brightness = 0;
+            app_state->led_settings[led].effect = DISABLE;
+        }
+        update_leds(app_state);
+        break;
+    case UNINSTALL:
+        system("sh actions.sh uninstall");
+        app_state->should_install_daemon = false;
+        app_state->should_quit = true;
+        break;
+    case QUIT:
+        app_state->should_quit = true;
+        break;
+    default:
+        break;
+    }
+}
 int initialize_additional_sdl_components(CoreSDLComponents *core_components, AdditionalSDLComponents *components)
 {
     /* Initialize SDL_image */
@@ -257,7 +354,9 @@ int initialize_additional_sdl_components(CoreSDLComponents *core_components, Add
     /* Create a texture to render from the background image. */
     components->backgroundTexture = create_sdl_texture_from_image(core_components->renderer, BACKGROUND_IMAGE_PATH);
 
-    if (!components->backgroundTexture)
+    components->menuTexture = create_sdl_texture_from_image(core_components->renderer, MENU_IMAGE_PATH);
+
+    if (!components->backgroundTexture || !components->menuTexture)
     {
 
         return 1;
@@ -281,6 +380,9 @@ int initialize_app_state(AppState *app_state)
     app_state->selected_setting = BRIGHTNESS;
     app_state->should_save_settings = false;
     app_state->should_quit = false;
+    app_state->should_install_daemon = true;
+    app_state->current_page = CONFIG_PAGE;
+    app_state->selected_menu_option = ENABLE_ALL;
 
     /* Load LED settings from file. */
     if (read_settings(app_state) != 0)
@@ -291,83 +393,137 @@ int initialize_app_state(AppState *app_state)
     return 0;
 }
 
-void initialize_user_interface(UserInterface *user_interface, CoreSDLComponents *core_components, AdditionalSDLComponents *components)
+void initialize_config_page_ui(SelectableMenuItems *menu_items, CoreSDLComponents *core_components, AdditionalSDLComponents *components)
 {
-    snprintf(user_interface->onscreen_log_message, sizeof(user_interface->onscreen_log_message), "Welcome to the LED Controller!");
-    user_interface->logging_text_texture = create_text_texture(core_components->renderer, components->font, &text_color, &text_shadow_color, user_interface->onscreen_log_message);
-    user_interface->brightness_text_texture = create_text_texture(core_components->renderer, components->font, &text_color, &text_shadow_color, user_interface->brightness_text);
-    user_interface->effect_text_texture = create_text_texture(core_components->renderer, components->font, &text_color, &text_shadow_color, user_interface->effect_text);
-    user_interface->color_text_texture = create_text_texture(core_components->renderer, components->font, &text_color, &text_shadow_color, user_interface->color_text);
-    user_interface->duration_text_texture = create_text_texture(core_components->renderer, components->font, &text_color, &text_shadow_color, user_interface->duration_text);
-    user_interface->selected_led_texture = create_text_texture(core_components->renderer, components->font, &text_color, &text_shadow_color, user_interface->selected_led_text);
-    user_interface->selected_option_texture = create_text_texture(core_components->renderer, components->font, &text_color, &text_shadow_color, user_interface->selected_option_text);
-}
+    menu_items->text_color = (SDL_Color){255, 239, 186, 255};
+    menu_items->text_shadow_color = (SDL_Color){0, 0, 0, 128};
+    menu_items->text_highlight_color = (SDL_Color){255, 173, 99, 255};
+    menu_items->item_count = LED_SETTINGS_COUNT;
+    menu_items->string_length = STRING_LENGTH;
+    menu_items->menu_text = malloc(menu_items->item_count * sizeof(char *));
+    menu_items->menu_text_textures = malloc(menu_items->item_count * sizeof(SDL_Texture *));
 
-void free_user_interface(UserInterface *user_interface)
-{
-    if (user_interface == NULL)
+    for (int setting_index = 0; setting_index < menu_items->item_count; setting_index++)
     {
-        return; /* Nothing to clean up if user_interface is NULL */
-    }
+        menu_items->menu_text[setting_index] = malloc(menu_items->string_length * sizeof(char));
+        /* preload default strings */
+        snprintf(menu_items->menu_text[setting_index], menu_items->string_length, "%s", led_setting_option_to_string(setting_index));
 
-    if (user_interface->logging_text_texture)
-    {
-        SDL_DestroyTexture(user_interface->logging_text_texture);
-        user_interface->logging_text_texture = NULL;
-    }
-    if (user_interface->brightness_text_texture)
-    {
-        SDL_DestroyTexture(user_interface->brightness_text_texture);
-        user_interface->brightness_text_texture = NULL;
-    }
-    if (user_interface->effect_text_texture)
-    {
-        SDL_DestroyTexture(user_interface->effect_text_texture);
-        user_interface->effect_text_texture = NULL;
-    }
-    if (user_interface->color_text_texture)
-    {
-        SDL_DestroyTexture(user_interface->color_text_texture);
-        user_interface->color_text_texture = NULL;
-    }
-    if (user_interface->duration_text_texture)
-    {
-        SDL_DestroyTexture(user_interface->duration_text_texture);
-        user_interface->duration_text_texture = NULL;
-    }
-    if (user_interface->selected_led_texture)
-    {
-        SDL_DestroyTexture(user_interface->selected_led_texture);
-        user_interface->selected_led_texture = NULL;
-    }
-    if (user_interface->selected_option_texture)
-    {
-        SDL_DestroyTexture(user_interface->selected_option_texture);
-        user_interface->selected_option_texture = NULL;
+        /* create text textures from strings */
+        menu_items->menu_text_textures[setting_index] = create_text_texture(core_components->renderer, components->font, &menu_items->text_color, &menu_items->text_shadow_color, menu_items->menu_text[setting_index]);
     }
 }
 
-void update_user_interface_text(UserInterface *user_interface, const CoreSDLComponents *core_components, const AdditionalSDLComponents *components, const AppState *app_state)
+void initialize_menu_ui(SelectableMenuItems *menu_items, CoreSDLComponents *core_components, AdditionalSDLComponents *components)
 {
+    menu_items->text_color = (SDL_Color){255, 239, 186, 255};
+    menu_items->text_shadow_color = (SDL_Color){0, 0, 0, 128};
+    menu_items->text_highlight_color = (SDL_Color){255, 173, 99, 255};
+    menu_items->item_count = MENU_OPTION_COUNT;
+    menu_items->string_length = STRING_LENGTH;
+    menu_items->menu_text = malloc(menu_items->item_count * sizeof(char *));
+    menu_items->menu_text_textures = malloc(menu_items->item_count * sizeof(SDL_Texture *));
 
+    for (int setting_index = 0; setting_index < menu_items->item_count; setting_index++)
+    {
+        menu_items->menu_text[setting_index] = malloc(menu_items->string_length * sizeof(char));
+        /* preload default strings */
+        snprintf(menu_items->menu_text[setting_index], menu_items->string_length, "%s", menu_option_to_string(setting_index));
+
+        /* create text textures from strings */
+        menu_items->menu_text_textures[setting_index] = create_text_texture(core_components->renderer, components->font, &menu_items->text_color, &menu_items->text_shadow_color, menu_items->menu_text[setting_index]);
+    }
+}
+
+void free_menu_items(SelectableMenuItems *menu_items)
+{
+    if (!menu_items)
+        return;
+    if (menu_items->menu_text_textures)
+    {
+        for (int item_index = 0; item_index < menu_items->item_count; item_index++)
+        {
+            if (menu_items->menu_text_textures[item_index])
+            {
+                SDL_DestroyTexture(menu_items->menu_text_textures[item_index]);
+            }
+        }
+        free(menu_items->menu_text_textures);
+    }
+    if (menu_items->menu_text)
+    {
+        for (int item_index = 0; item_index < menu_items->item_count; item_index++)
+        {
+            if (menu_items->menu_text[item_index])
+            {
+                free(menu_items->menu_text[item_index]);
+            }
+        }
+        free(menu_items->menu_text);
+    }
+}
+
+void update_config_page_ui_text(SelectableMenuItems *menu_items, const CoreSDLComponents *core_components, const AdditionalSDLComponents *components, const AppState *app_state)
+{
     LedSettingOption selected_setting = app_state->selected_setting;
-    snprintf(user_interface->brightness_text, sizeof(user_interface->brightness_text), "%sBrightness: %d", selected_setting == BRIGHTNESS ? MENU_CARRET : "", app_state->led_settings[app_state->selected_led].brightness);
-    user_interface->brightness_text_texture = create_text_texture(core_components->renderer, components->font, &text_color, &text_shadow_color, user_interface->brightness_text);
+    for (LedSettingOption setting_index = 0; setting_index < LED_SETTINGS_COUNT; setting_index++)
+    {
+        switch (setting_index)
+        {
+        case SELECTED_LED:
+            snprintf(menu_items->menu_text[setting_index], menu_items->string_length, "%sLED: %s%s",
+                     selected_setting == SELECTED_LED ? MENU_CARRET_LEFT : "",
+                     led_to_string(app_state->selected_led),
+                     selected_setting == SELECTED_LED ? MENU_CARRET_RIGHT : "");
+            break;
+        case BRIGHTNESS:
+            /* Write menu text to string */
+            snprintf(menu_items->menu_text[setting_index],
+                     menu_items->string_length, "%sBrightness: %d%s", selected_setting == BRIGHTNESS ? MENU_CARRET_LEFT : "",
+                     app_state->led_settings[app_state->selected_led].brightness,
+                     selected_setting == BRIGHTNESS ? MENU_CARRET_RIGHT : "");
+            break;
+        case EFFECT:
+            snprintf(menu_items->menu_text[setting_index],
+                     menu_items->string_length,
+                     "%sEffect:     %s%s",
+                     selected_setting == EFFECT ? MENU_CARRET_LEFT : "",
+                     animation_effect_to_string(app_state->led_settings[app_state->selected_led].effect),
+                     selected_setting == EFFECT ? MENU_CARRET_RIGHT : "");
+            break;
+        case COLOR:
+            snprintf(menu_items->menu_text[setting_index],
+                     menu_items->string_length, "%sColor:   %s%s",
+                     selected_setting == COLOR ? MENU_CARRET_LEFT : "",
+                     color_to_string(app_state->led_settings[app_state->selected_led].color),
+                     selected_setting == COLOR ? MENU_CARRET_RIGHT : "");
+            break;
+        case DURATION:
+            snprintf(menu_items->menu_text[setting_index],
+                     menu_items->string_length,
+                     "%sDuration:  %dms%s",
+                     selected_setting == DURATION ? MENU_CARRET_LEFT : "",
+                     app_state->led_settings[app_state->selected_led].duration,
+                     selected_setting == DURATION ? MENU_CARRET_RIGHT : "");
+            break;
+        }
 
-    snprintf(user_interface->effect_text, sizeof(user_interface->effect_text), "%sEffect:     %s", selected_setting == EFFECT ? MENU_CARRET : "", animation_effect_to_string(app_state->led_settings[app_state->selected_led].effect));
-    user_interface->effect_text_texture = create_text_texture(core_components->renderer, components->font, &text_color, &text_shadow_color, user_interface->effect_text);
+        /* Create texture from string */
+        menu_items->menu_text_textures[setting_index] = create_text_texture(core_components->renderer, components->font, selected_setting == setting_index ? &menu_items->text_highlight_color : &menu_items->text_color, &menu_items->text_shadow_color, menu_items->menu_text[setting_index]);
+    }
+}
 
-    snprintf(user_interface->color_text, sizeof(user_interface->color_text), "%sColor:      0x%x", selected_setting == COLOR ? MENU_CARRET : "", app_state->led_settings[app_state->selected_led].color);
-    user_interface->color_text_texture = create_text_texture(core_components->renderer, components->font, &text_color, &text_shadow_color, user_interface->color_text);
+void update_menu_ui_text(SelectableMenuItems *menu_items, const CoreSDLComponents *core_components, const AdditionalSDLComponents *components, const AppState *app_state)
+{
+    MenuOption selected_menu_option = app_state->selected_menu_option;
 
-    snprintf(user_interface->duration_text, sizeof(user_interface->duration_text), "%sDuration:  %dms", selected_setting == DURATION ? MENU_CARRET : "", app_state->led_settings[app_state->selected_led].duration);
-    user_interface->duration_text_texture = create_text_texture(core_components->renderer, components->font, &text_color, &text_shadow_color, user_interface->duration_text);
+    for (int menu_index = 0; menu_index < menu_items->item_count; menu_index++)
+    {
+        snprintf(menu_items->menu_text[menu_index], menu_items->string_length, "%s%s", selected_menu_option == menu_index ? ">>> " : "",
+                 menu_option_to_string(menu_index));
 
-    snprintf(user_interface->selected_led_text, sizeof(user_interface->selected_led_text), "[ L1 ] %s [ R1 ]", led_to_string(app_state->selected_led));
-    user_interface->selected_led_texture = create_text_texture(core_components->renderer, components->font, &text_color, &text_shadow_color, user_interface->selected_led_text);
-
-    snprintf(user_interface->selected_option_text, sizeof(user_interface->selected_option_text), "Selected Option: %s", led_setting_option_to_string(app_state->selected_setting));
-    user_interface->selected_option_texture = create_text_texture(core_components->renderer, components->font, &text_color, &text_shadow_color, user_interface->selected_option_text);
+        menu_items->menu_text_textures[menu_index] = create_text_texture(core_components->renderer, components->font, selected_menu_option == menu_index ? &menu_items->text_highlight_color : &menu_items->text_color, &menu_items->text_shadow_color, menu_items->menu_text[menu_index]);
+    }
 }
 
 int clamp(int value, int min, int max)
@@ -497,16 +653,15 @@ void render_text_texture(SDL_Renderer *renderer, SDL_Texture *texture, int x, in
     SDL_RenderCopy(renderer, texture, NULL, &dstrect);
 }
 
-void render_user_interface(SDL_Renderer *renderer, UserInterface *user_interface, int start_x, int start_y)
+void render_menu_items(SDL_Renderer *renderer, SelectableMenuItems *menu_items, int start_x, int start_y)
 {
     /* x and y UI element spacing. */
     const int x_offset = 20;
     const int y_offset = 50;
-    render_text_texture(renderer, user_interface->selected_led_texture, start_x, start_y);
-    render_text_texture(renderer, user_interface->brightness_text_texture, start_x + x_offset, start_y + y_offset * 2);
-    render_text_texture(renderer, user_interface->effect_text_texture, start_x + x_offset, start_y + y_offset * 3);
-    render_text_texture(renderer, user_interface->duration_text_texture, start_x + x_offset, start_y + y_offset * 4);
-    render_text_texture(renderer, user_interface->color_text_texture, start_x + x_offset, start_y + y_offset * 5);
+    for (int item_index = 0; item_index < menu_items->item_count; item_index++)
+    {
+        render_text_texture(renderer, menu_items->menu_text_textures[item_index], start_x + x_offset, start_y + y_offset * item_index);
+    }
 }
 
 SDL_Surface *load_image(char *image_name)
@@ -546,10 +701,58 @@ char *animation_effect_to_string(AnimationEffect effect)
     }
 }
 
+char *color_to_string(uint32_t color)
+{
+    static char hex_color[STRING_LENGTH];
+    switch (color)
+    {
+    case 0xFF0000:
+        return "Red";
+    case 0xFF8080:
+        return "Light Red";
+    case 0x800000:
+        return "Maroon";
+    case 0xFF0080:
+        return "Hot Pink";
+    case 0xFF8000:
+        return "Orange";
+    case 0x00FF00:
+        return "Green";
+    case 0x00FF80:
+        return "Lime";
+    case 0xFFFF00:
+        return "Yellow";
+    case 0x808000:
+        return "Olive";
+    case 0x0000FF:
+        return "Blue";
+    case 0x0080FF:
+        return "Light Blue";
+    case 0x000080:
+        return "Navy";
+    case 0x00FFFF:
+        return "Cyan";
+    case 0x008080:
+        return "Teal";
+    case 0xFF00FF:
+        return "Magenta";
+    case 0xFF80C0:
+        return "Pink";
+    case 0xFFFFFF:
+        return "White";
+    default:
+        snprintf(hex_color, sizeof(hex_color), "0x%08X", color);
+        return "hex_color";
+    }
+}
+
 char *led_setting_option_to_string(LedSettingOption setting)
 {
     switch (setting)
     {
+    case SELECTED_LED:
+        return "LED: ";
+        break;
     case BRIGHTNESS:
         return "Brightness: ";
     case EFFECT:
@@ -560,6 +763,23 @@ char *led_setting_option_to_string(LedSettingOption setting)
         return "Duration:   ";
     default:
         return "UNKNOWN     ";
+    }
+}
+
+char *menu_option_to_string(MenuOption option)
+{
+    switch (option)
+    {
+    case ENABLE_ALL:
+        return "Turn on all LEDs";
+    case DISABLE_ALL:
+        return "Turn off all LEDs";
+    case UNINSTALL:
+        return "Uninstall";
+    case QUIT:
+        return "Quit";
+    default:
+        return "UNKNOWN";
     }
 }
 
@@ -732,20 +952,23 @@ void update_leds(AppState *app_state)
 
 void install_daemon()
 {
-    system("sh install.sh");
+    system("sh actions.sh install");
 }
 
 void uninstall_daemon()
 {
-    system("sh uninstall.sh");
+    system("sh actions.sh uninstall");
 }
 
-int teardown(CoreSDLComponents *core_components, AdditionalSDLComponents *components, UserInterface *user_interface, Sprite *brick_sprite)
+int teardown(CoreSDLComponents *core_components, AdditionalSDLComponents *components,
+             SelectableMenuItems *config_menu_items, SelectableMenuItems *main_menu_items, Sprite *brick_sprite)
 {
-    free_user_interface(user_interface);
-    free_sdl_core(core_components);
+    free_menu_items(config_menu_items);
+    free_menu_items(main_menu_items);
     free_sprite(brick_sprite);
+    free_sdl_core(core_components);
     SDL_DestroyTexture(components->backgroundTexture);
+    SDL_DestroyTexture(components->menuTexture);
     TTF_CloseFont(components->font);
     IMG_Quit();
     TTF_Quit();
