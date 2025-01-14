@@ -117,10 +117,10 @@ int main(int argc, char *argv[])
 
         /* Render brick sprite */
         brick_sprite.current_animation_index = app_state.selected_led;
-        update_sprite_render(core_components.renderer, &brick_sprite, 100, 100);
+        update_sprite_render(core_components.renderer, &brick_sprite, 10, 99);
 
         /* Render the interactable user interface. */
-        render_menu_items(core_components.renderer, &config_page_ui, 500, 150);
+        render_menu_items(core_components.renderer, &config_page_ui, 550, 150);
 
         if (app_state.current_page == MENU_PAGE)
         { /* Render menu last on stack if it needs to show*/
@@ -146,12 +146,13 @@ int main(int argc, char *argv[])
 void render_colored_square(AppState *app_state, CoreSDLComponents *core_components)
 {
     /* Adjusted to add 4 pixels on top */
-    SDL_Rect black_rect = {100, 96, BRICK_SPRITE_WIDTH, BRICK_SPRITE_HEIGHT + 4};
+    SDL_Rect black_rect = {20, 96, BRICK_SPRITE_WIDTH, BRICK_SPRITE_HEIGHT + 4};
     /* Black color */
     SDL_SetRenderDrawColor(core_components->renderer, 0, 0, 0, 255);
     SDL_RenderFillRect(core_components->renderer, &black_rect);
     /* Adjusted to match the new black_rect */
-    SDL_Rect color_rect = {105, 101, BRICK_SPRITE_WIDTH - 10, BRICK_SPRITE_HEIGHT - 6};
+
+    SDL_Rect color_rect = {25, 101, BRICK_SPRITE_WIDTH - 10, BRICK_SPRITE_HEIGHT - 6};
     int32_t color = app_state->led_settings[app_state->selected_led].color;
     SDL_SetRenderDrawColor(core_components->renderer, (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF, 255);
     SDL_RenderFillRect(core_components->renderer, &color_rect);
@@ -639,14 +640,14 @@ int initialize_brick_sprite(Sprite *brick_sprite, SDL_Renderer *renderer)
     brick_sprite->current_animation_index = 0;
 
     /* Define what frames to display for each LED option. */
-    static int front_frames[] = {0, 1};
-    static int top_frames[] = {2, 3};
-    static int back_frames[] = {2, 4};
-    static int frame_durations[] = {500, 1000};
+    static int front_frames[] = {0, 1, 2, 3, 2, 1, 0};
+    static int top_frames[] = {4, 5, 6, 8, 6, 5, 4};
+    static int back_frames[] = {4, 5, 6, 7, 6, 5, 4};
+    static int frame_durations[] = {150, 150, 150, 500, 150, 150, 150};
 
-    brick_sprite->animations[LED_FRONT] = (AnimationInfo){front_frames, frame_durations, 2, 0, 0};
-    brick_sprite->animations[LED_TOP] = (AnimationInfo){top_frames, frame_durations, 2, 0, 0};
-    brick_sprite->animations[LED_BACK] = (AnimationInfo){back_frames, frame_durations, 2, 0, 0};
+    brick_sprite->animations[LED_FRONT] = (AnimationInfo){front_frames, frame_durations, 7, 0, 0};
+    brick_sprite->animations[LED_TOP] = (AnimationInfo){top_frames, frame_durations, 7, 0, 0};
+    brick_sprite->animations[LED_BACK] = (AnimationInfo){back_frames, frame_durations, 7, 0, 0};
     return 0;
 }
 
