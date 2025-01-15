@@ -376,4 +376,15 @@ void install_daemon();
  *      void
  */
 void uninstall_daemon();
+
+/**
+ * Quick action that matches all LED colors to the current
+ *
+ * Parameters:
+ *      app_state - state object with user information we're updating.
+ *
+ * Returns:
+ *      void
+ */
+void color_match_leds(AppState *app_state);
 #endif

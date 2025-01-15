@@ -174,6 +174,9 @@ void handle_user_input(InputType user_input, AppState *app_state)
             app_state->current_page = MENU_PAGE;
             break;
             break;
+        case A:
+            handle_change_setting(app_state, 0);
+            break;
         case B:
             switch (app_state->current_page)
             {
@@ -294,7 +297,13 @@ void handle_change_setting(AppState *app_state, int change)
         selected_led_settings->color = colors[current_color_index];
     }
     break;
-
+    case MATCH_SETTINGS:
+        /* Change was from the user selecting the A button*/
+        if (change == 0)
+        {
+            color_match_leds(app_state);
+        }
+        break;
     default:
         break;
     }
@@ -518,6 +527,11 @@ void update_config_page_ui_text(SelectableMenuItems *menu_items, const CoreSDLCo
                      selected_setting == DURATION ? MENU_CARRET_LEFT : "",
                      app_state->led_settings[app_state->selected_led].duration,
                      selected_setting == DURATION ? MENU_CARRET_RIGHT : "");
+            break;
+        case MATCH_SETTINGS:
+            snprintf(menu_items->menu_text[setting_index],
+                     menu_items->string_length,
+                     "Sync LED colors");
             break;
         }
 
@@ -785,6 +799,15 @@ void install_daemon()
 void uninstall_daemon()
 {
     system("sh scripts/uninstall.sh");
+    system("sh scripts/turn_off_all_leds.sh");
+}
+
+void color_match_leds(AppState *app_state)
+{
+    for (Led led = 0; led < LED_COUNT; led++)
+    {
+        app_state->led_settings[led].color = app_state->led_settings[app_state->selected_led].color;
+    }
 }
 
 int teardown(CoreSDLComponents *core_components, AdditionalSDLComponents *components,
