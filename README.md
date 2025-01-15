@@ -189,3 +189,5 @@ Pierce
 # TODO 
 - Smart pro support.
 - Separate core sdl functionality to its own repo to import as a submodule for future apps?
+- Look into running daemon before the OS can flash blue LEDs on boot.
+- Support low battery red_led flash functionality.
