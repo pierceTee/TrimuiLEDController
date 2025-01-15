@@ -17,11 +17,19 @@ if ! container_exists "$CONTAINER_NAME"; then
     cd -
 fi
 
-make && make package
+# Check for the "release" parameter
+if [ "$1" = "release" ]; then
+    MAKE_COMMAND="make && make release"
+else
+    MAKE_COMMAND="make && make package"
+fi
+
+# Run the make commands
+eval $MAKE_COMMAND
 
 # Run the Docker container and execute the make commands
 docker run --rm --privileged \
     --platform linux/arm64 \
     -v $(pwd)/:/root/workspace \
     --device /dev/dri \
-    $CONTAINER_NAME sh -c "cd /root/workspace && make && make package"
+    $CONTAINER_NAME sh -c "cd /root/workspace && $MAKE_COMMAND"

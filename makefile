@@ -16,13 +16,10 @@ all: led_controller
 led_controller:
 	mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) -o $(BUILD_DIR)/led_controller workspace/src/led_controller_common.c workspace/src/led_controller.c workspace/src/sdl_base.c  $(LDFLAGS)
+	chmod -R a+rwx $(BUILD_DIR)
 
 package: all
 	mkdir -p $(RELEASE_DIR)
-	cp github/readme.txt $(RELEASE_DIR)/
-
-	# zip up all the source code
-# 	zip -r $(RELEASE_DIR)/source_code.zip . 
 
 	# Create general project package
 	mkdir -p $(RELEASE_DIR)/$(PROJECT_NAME).pak/scripts
@@ -37,7 +34,19 @@ package: all
 	cp -r workspace/assets/ workspace/service/ $(BUILD_DIR)/* workspace/config_files/* $(RELEASE_DIR)/$(PROJECT_NAME).pak
 
 	# Make the release directory executable by all users
-	chmod -R u+rx,g+rx,o+rx $(RELEASE_DIR)
+	chmod -R a+rwx $(RELEASE_DIR)
+
+release: package
+	# Create the final release package
+	mkdir -p $(RELEASE_DIR)/github	
+	cp github/readme.txt $(RELEASE_DIR)
+
+	# zip up the project
+	cd $(RELEASE_DIR) && zip -r github/$(PROJECT_NAME).zip . -x "github/*"
+	cd - 
+	# zip up all the source code
+	zip -r $(RELEASE_DIR)/github/source_code.zip . -x "release/*" "build/* .git/*" ".github/*"
+	chmod -R a+rwx $(RELEASE_DIR)/github
 
 clean:
 	rm -rf build release
