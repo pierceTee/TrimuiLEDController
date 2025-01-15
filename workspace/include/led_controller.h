@@ -15,14 +15,6 @@ SDL_Color text_shadow_color = {0, 0, 0, 128};
 
 /* The list of colors we support */
 const uint32_t colors[] = {
-    // Reds
-    0xFF0000, // Red
-    0xFF8080, // Light Red
-    0x800000, // Maroon
-    // Pinks
-    0xFF0080, // Hot Pink
-    // Oranges
-    0xFF8000, // Orange
 
     // Greens
     0x00FF00, // Green
@@ -35,19 +27,22 @@ const uint32_t colors[] = {
     // Blues
     0x0000FF, // Blue
     0x0080FF, // Sky Blue
-    0x000080, // Navy
 
     // Cyans
     0x00FFFF, // Cyan
     0x008080, // Teal
 
+    // Oranges
+    0xFF8000, // Orange
+    // Reds
+    0xFF0000, // Red
     // Magentas
     0xFF00FF, // Magenta
     0xFF80C0, // Light Magenta
+    // Pinks
+    0xFF0080, // Hot Pink
 
-    // Whites
-    0xFFFFFF, // White
-
+    0xFF8080, // Light Red
 };
 
 const int num_color = sizeof(colors) / sizeof(colors[0]);

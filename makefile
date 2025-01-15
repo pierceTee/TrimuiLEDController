@@ -22,27 +22,22 @@ package: all
 	cp github/readme.txt $(RELEASE_DIR)/
 
 	# zip up all the source code
-	zip -r $(RELEASE_DIR)/source_code.zip . 
+# 	zip -r $(RELEASE_DIR)/source_code.zip . 
 
 	# Create general project package
-	mkdir -p $(RELEASE_DIR)/$(PROJECT_NAME)/scripts
 	mkdir -p $(RELEASE_DIR)/$(PROJECT_NAME).pak/scripts
 
 	# Copy the launch script to the release directory
-	cp -r workspace/scripts/launch/led-controller-launch.sh $(RELEASE_DIR)/$(PROJECT_NAME)/launch.sh
-	cp -r workspace/scripts/launch/led-controller-launch-minui.sh $(RELEASE_DIR)/$(PROJECT_NAME).pak/launch.sh
+	cp -r workspace/scripts/launch/launch.sh $(RELEASE_DIR)/$(PROJECT_NAME).pak/launch.sh
 
 	# Copy the service scripts to the release directory
-	cp workspace/scripts/runtime/* $(RELEASE_DIR)/$(PROJECT_NAME)/scripts
 	cp workspace/scripts/runtime/* $(RELEASE_DIR)/$(PROJECT_NAME).pak/scripts
 	
 	# Copy the assets, service files, config files, and build files to the release directory
-	cp -r workspace/assets/ workspace/service/ $(BUILD_DIR)/* workspace/config_files/* $(RELEASE_DIR)/$(PROJECT_NAME)
 	cp -r workspace/assets/ workspace/service/ $(BUILD_DIR)/* workspace/config_files/* $(RELEASE_DIR)/$(PROJECT_NAME).pak
 
 	# Make the release directory executable by all users
-	chmod -R u+rx,g+rx,o+rx $(RELEASE_DIR)/$(PROJECT_NAME)
-	chmod -R u+rx,g+rx,o+rx $(RELEASE_DIR)/$(PROJECT_NAME).pak
+	chmod -R u+rx,g+rx,o+rx $(RELEASE_DIR)
 
 clean:
 	rm -rf build release
