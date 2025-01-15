@@ -315,25 +315,10 @@ void handle_menu_select(AppState *app_state, MenuOption selected_menu_option)
     switch (selected_menu_option)
     {
     case ENABLE_ALL:
-    {
-        for (Led led = 0; led < LED_COUNT; led++)
-        {
-            app_state->led_settings[led].brightness = MAX_BRIGHTNESS;
-            app_state->led_settings[led].effect = STATIC;
-        }
-        update_leds(app_state);
-        system("sh scripts/turn_on_all_leds.sh");
-    }
-
-    break;
+        turn_on_all_leds(app_state);
+        break;
     case DISABLE_ALL:
-        for (Led led = 0; led < LED_COUNT; led++)
-        {
-            app_state->led_settings[led].brightness = 0;
-            app_state->led_settings[led].effect = DISABLE;
-        }
-        update_leds(app_state);
-        system("sh scripts/turn_off_all_leds.sh");
+        turn_off_all_leds(app_state);
         break;
     case UNINSTALL:
         uninstall_daemon();
@@ -791,7 +776,6 @@ void install_daemon()
 void uninstall_daemon()
 {
     system("sh scripts/uninstall.sh");
-    system("sh scripts/turn_off_all_leds.sh");
 }
 
 void color_match_leds(AppState *app_state)
@@ -800,6 +784,28 @@ void color_match_leds(AppState *app_state)
     {
         app_state->led_settings[led].color = app_state->led_settings[app_state->selected_led].color;
     }
+}
+
+void turn_off_all_leds(AppState *app_state)
+{
+    for (Led led = 0; led < LED_COUNT; led++)
+    {
+        app_state->led_settings[led].brightness = 0;
+        app_state->led_settings[led].effect = DISABLE;
+    }
+    update_leds(app_state);
+    system("sh scripts/turn_off_all_leds.sh");
+}
+
+void turn_on_all_leds(AppState *app_state)
+{
+    for (Led led = 0; led < LED_COUNT; led++)
+    {
+        app_state->led_settings[led].brightness = MAX_BRIGHTNESS;
+        app_state->led_settings[led].effect = STATIC;
+    }
+    update_leds(app_state);
+    system("sh scripts/turn_on_all_leds.sh");
 }
 
 int teardown(CoreSDLComponents *core_components, AdditionalSDLComponents *components,

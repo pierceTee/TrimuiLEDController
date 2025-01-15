@@ -382,4 +382,27 @@ void uninstall_daemon();
  *      void
  */
 void color_match_leds(AppState *app_state);
+
+/**
+ * Turn off all LEDs.
+ *
+ * Parameters:
+ *      app_state - state object with led information that must be updated.
+ *
+ * Returns:
+ *      void
+ */
+void turn_off_all_leds(AppState *app_state);
+
+/**
+ * Turn on all LEDs.
+ *
+ * Parameters:
+ *      app_state - state object with led information that must be updated.
+ *
+ * Returns:
+ *      void
+ */
+void turn_on_all_leds(AppState *app_state);
+
 #endif
