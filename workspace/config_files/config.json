@@ -1,5 +1,5 @@
 {
-  "label": "TE Controller",
+  "label": "LED Controller",
   "icon": "assets/images/icon.png",
   "iconsel": "assets/images/icon.png",
   "launch": "launch.sh",

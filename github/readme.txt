@@ -2,7 +2,7 @@ This application is designed for the TrimUI smart Brick emulation handheld.
 There has been no testing of operational safety on any other hardware.
  
 
-Stock OS: Place the "LedController" folder in the "Apps" folder of your SDCARD and launch from the "Apps" menu.
+Stock OS: Place the "LedController.pak" folder in the "Apps" folder of your SDCARD and launch from the "Apps" menu.
 
 MinUI: Place the "LedController.pak" folder in the "Tools/tg3040" folder of your SDCARD and launch from the "Tools" menu.
 
