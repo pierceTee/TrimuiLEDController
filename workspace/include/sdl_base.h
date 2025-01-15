@@ -5,7 +5,6 @@
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>
 #include <stdbool.h>
-
 /* Struct to hold core SDL components
  *
  * Helps keep all SDL components in one place.
