@@ -9,7 +9,7 @@ export LOG_FILE="led_controller.log"
 SCRIPT_NAME=$(basename "$0")
 
 echo $0 $*
-cd "$(dirname "$(realpath "$0")")" || exit 1
+cd $(dirname "$0")
 
 echo "[`date '+%Y-%m-%d %H:%M:%S'`][$SCRIPT_NAME]: Launching cd $(dirname "$0")/led_controller" >> $LOG_FILE
 
