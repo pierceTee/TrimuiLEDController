@@ -21,6 +21,9 @@ package: all
 	mkdir -p $(RELEASE_DIR)
 	cp github/readme.txt $(RELEASE_DIR)/
 
+	# zip up all the source code
+	zip -r $(RELEASE_DIR)/source_code.zip . 
+
 	# Create general project package
 	mkdir -p $(RELEASE_DIR)/$(PROJECT_NAME)/scripts
 	mkdir -p $(RELEASE_DIR)/$(PROJECT_NAME).pak/scripts
@@ -52,4 +55,4 @@ deps:
 	sudo apt install -y libsdl2-dev libsdl2-ttf-dev libsdl2-image-dev
 
 	# Install the cross-compilation tools
-	sudo apt-get install -y gcc g++
+	sudo apt-get install -y gcc g++ zip
