@@ -483,10 +483,18 @@ void update_config_page_ui_text(SelectableMenuItems *menu_items, const CoreSDLCo
             break;
         case BRIGHTNESS:
             /* Write menu text to string */
-            snprintf(menu_items->menu_text[setting_index],
-                     menu_items->string_length, "%sBrightness: %d%s", selected_setting == BRIGHTNESS ? MENU_CARRET_LEFT : "",
-                     app_state->led_settings[app_state->selected_led].brightness / BRIGHTNESS_INCREMENT,
-                     selected_setting == BRIGHTNESS ? MENU_CARRET_RIGHT : "");
+            if (app_state->selected_led != LED_TOP)
+            {
+                snprintf(menu_items->menu_text[setting_index],
+                         menu_items->string_length, "%sBrightness: %d%s", selected_setting == BRIGHTNESS ? MENU_CARRET_LEFT : "",
+                         app_state->led_settings[app_state->selected_led].brightness / BRIGHTNESS_INCREMENT,
+                         selected_setting == BRIGHTNESS ? MENU_CARRET_RIGHT : "");
+            }
+            else
+            {
+                snprintf(menu_items->menu_text[setting_index],
+                         menu_items->string_length, "Brightness: N/A");
+            }
             break;
         case EFFECT:
             snprintf(menu_items->menu_text[setting_index],
