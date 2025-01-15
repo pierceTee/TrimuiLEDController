@@ -189,7 +189,7 @@ void handle_user_input(InputType user_input, AppState *app_state)
             break;
         case DPAD_UP:
             /* Switch between settings */
-            app_state->selected_setting = (app_state->selected_setting - 1) % LED_SETTINGS_COUNT;
+            app_state->selected_setting = (app_state->selected_setting - 1 + LED_SETTINGS_COUNT) % LED_SETTINGS_COUNT;
             break;
         case DPAD_DOWN:
             /* Switch between settings */
