@@ -156,6 +156,10 @@ Pierce
 - Refine colors.
 - Basic menu with options to: turn off/on all LEDs, uninstall all sysemd daemons.
 - Smart pro support.
+<<<<<<< Updated upstream
 - Split sprite rendering code into its own file for future use.
 - Update sprite to something nicer.
+=======
+- Consider dropping brightness support.
+>>>>>>> Stashed changes
 - Release.
