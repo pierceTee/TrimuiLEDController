@@ -176,6 +176,7 @@ void handle_user_input(InputType user_input, AppState *app_state)
             break;
         case A:
             handle_change_setting(app_state, 0);
+            app_state->should_update_leds = true;
             break;
         case B:
             switch (app_state->current_page)
@@ -492,18 +493,10 @@ void update_config_page_ui_text(SelectableMenuItems *menu_items, const CoreSDLCo
             break;
         case BRIGHTNESS:
             /* Write menu text to string */
-            if (app_state->selected_led != LED_TOP)
-            {
-                snprintf(menu_items->menu_text[setting_index],
-                         menu_items->string_length, "%sBrightness: %d%s", selected_setting == BRIGHTNESS ? MENU_CARRET_LEFT : "",
-                         app_state->led_settings[app_state->selected_led].brightness / BRIGHTNESS_INCREMENT,
-                         selected_setting == BRIGHTNESS ? MENU_CARRET_RIGHT : "");
-            }
-            else
-            {
-                snprintf(menu_items->menu_text[setting_index],
-                         menu_items->string_length, "Brightness: N/A");
-            }
+            snprintf(menu_items->menu_text[setting_index],
+                     menu_items->string_length, "%sBrightness: %d%s", selected_setting == BRIGHTNESS ? MENU_CARRET_LEFT : "",
+                     app_state->led_settings[app_state->selected_led].brightness / BRIGHTNESS_INCREMENT,
+                     selected_setting == BRIGHTNESS ? MENU_CARRET_RIGHT : "");
             break;
         case EFFECT:
             snprintf(menu_items->menu_text[setting_index],
@@ -687,9 +680,17 @@ SDL_Surface *load_image(const char *image_name)
     return surface;
 }
 
-void write_max_scale_data(FILE *file, const AppState *app_state, const Led led, char *filepath, const char *suffix)
+void write_max_scale_data(FILE *file, const AppState *app_state, const Led led, char *filepath)
 {
-    snprintf(filepath, STRING_LENGTH, "%s/max_scale_%s", SYS_FILE_PATH, suffix);
+    if (led == LED_TOP)
+    {
+        snprintf(filepath, STRING_LENGTH, "%s/max_scale", SYS_FILE_PATH);
+    }
+    else
+    {
+        snprintf(filepath, STRING_LENGTH, "%s/max_scale_%s", SYS_FILE_PATH, led_internal_name(led));
+    }
+
     file = fopen(filepath, "w");
     if (file != NULL)
     {
@@ -702,50 +703,68 @@ void write_max_scale_data(FILE *file, const AppState *app_state, const Led led, 
     }
 }
 
-void write_effect_data(FILE *file, const AppState *app_state, const Led led, char *filepath, const char *suffix)
+void write_effect_data(FILE *file, const AppState *app_state, const Led led, char *filepath)
 {
-    snprintf(filepath, STRING_LENGTH, "%s/effect_%s", SYS_FILE_PATH, suffix);
-    file = fopen(filepath, "w");
-    if (file != NULL)
+    const char *led_suffix[1] = {led_internal_name(led)};
+    const char **suffix_array = (led == LED_FRONT) ? front_led_suffix : led_suffix;
+
+    for (int suffix_index = 0; suffix_index < (led == LED_FRONT ? 2 : 1); suffix_index++)
     {
-        fprintf(file, "%d\n", app_state->led_settings[led].effect);
-        fclose(file);
-    }
-    else
-    {
-        SDL_Log("Failed to open file: %s", filepath);
+        snprintf(filepath, STRING_LENGTH, "%s/effect_%s", SYS_FILE_PATH, suffix_array[suffix_index]);
+        file = fopen(filepath, "w");
+        if (file != NULL)
+        {
+            fprintf(file, "%d\n", app_state->led_settings[led].effect);
+            fclose(file);
+        }
+        else
+        {
+            SDL_Log("Failed to open file: %s", filepath);
+        }
     }
 }
 
-void write_effect_duration_data(FILE *file, const AppState *app_state, const Led led, char *filepath, const char *suffix)
+void write_effect_duration_data(FILE *file, const AppState *app_state, const Led led, char *filepath)
 {
-    snprintf(filepath, STRING_LENGTH, "%s/effect_duration_%s", SYS_FILE_PATH, suffix);
-    file = fopen(filepath, "w");
-    if (file != NULL)
+    const char *led_suffix[1] = {led_internal_name(led)};
+    const char **suffix_array = (led == LED_FRONT) ? front_led_suffix : led_suffix;
+
+    for (int suffix_index = 0; suffix_index < (led == LED_FRONT ? 2 : 1); suffix_index++)
     {
-        fprintf(file, "%d\n", app_state->led_settings[led].duration);
-        fclose(file);
-    }
-    else
-    {
-        SDL_Log("Failed to open file: %s", filepath);
+        snprintf(filepath, STRING_LENGTH, "%s/effect_duration_%s", SYS_FILE_PATH, suffix_array[suffix_index]);
+        file = fopen(filepath, "w");
+        if (file != NULL)
+        {
+            fprintf(file, "%d\n", app_state->led_settings[led].duration);
+            fclose(file);
+        }
+        else
+        {
+            SDL_Log("Failed to open file: %s", filepath);
+        }
     }
 }
 
-void write_color_data(FILE *file, const AppState *app_state, const Led led, char *filepath, const char *suffix)
+void write_color_data(FILE *file, const AppState *app_state, const Led led, char *filepath)
 {
-    snprintf(filepath, STRING_LENGTH, "%s/effect_rgb_hex_%s", SYS_FILE_PATH, suffix);
-    file = fopen(filepath, "w");
-    if (file != NULL)
-    {
+    const char *led_suffix[1] = {led_internal_name(led)};
+    const char **suffix_array = (led == LED_FRONT) ? front_led_suffix : led_suffix;
 
-        fprintf(file, "%06X\n", app_state->led_settings[led].color);
-
-        fclose(file);
-    }
-    else
+    for (int suffix_index = 0; suffix_index < (led == LED_FRONT ? 2 : 1); suffix_index++)
     {
-        SDL_Log("Failed to open file: %s", filepath);
+        snprintf(filepath, STRING_LENGTH, "%s/effect_rgb_hex_%s", SYS_FILE_PATH, suffix_array[suffix_index]);
+        file = fopen(filepath, "w");
+        if (file != NULL)
+        {
+
+            fprintf(file, "%06X\n", app_state->led_settings[led].color);
+
+            fclose(file);
+        }
+        else
+        {
+            SDL_Log("Failed to open file: %s", filepath);
+        }
     }
 }
 
@@ -754,40 +773,13 @@ void update_leds(AppState *app_state)
     char filepath[STRING_LENGTH];
     FILE *file = NULL;
 
-    const char *front_led_name_spit[2] = {"f1", "f2"};
-
     app_state->should_update_leds = false;
     for (Led led = 0; led < LED_COUNT; led++)
     {
-        const char *name = led_internal_name(led);
-
-        /* Update everything else */
-        if (led == LED_FRONT)
-        {
-            /* Front LED filenames are split into f1 & f2 */
-            for (int name_index = 0; name_index < 2; name_index++)
-            {
-                /* Order for these write calls actually matters.
-                My theory is that the OS listens for changes on the effect data path and
-                updates updates everything but I haven't fully tested this. */
-                write_color_data(file, app_state, led, filepath, front_led_name_spit[name_index]);
-                write_effect_duration_data(file, app_state, led, filepath, front_led_name_spit[name_index]);
-                write_effect_data(file, app_state, led, filepath, front_led_name_spit[name_index]);
-            }
-        }
-        else
-        {
-            write_color_data(file, app_state, led, filepath, name);
-            write_effect_duration_data(file, app_state, led, filepath, name);
-            write_effect_data(file, app_state, led, filepath, name);
-        }
-
-        /* Update brightness - Consider updating max_scale generally(?)
-        Only FRONT and BACK have max_scale files */
-        if (led != LED_FRONT || led != LED_BACK)
-        {
-            write_max_scale_data(file, app_state, led, filepath, name);
-        }
+        write_max_scale_data(file, app_state, led, filepath);
+        write_color_data(file, app_state, led, filepath);
+        write_effect_duration_data(file, app_state, led, filepath);
+        write_effect_data(file, app_state, led, filepath);
     }
 }
 

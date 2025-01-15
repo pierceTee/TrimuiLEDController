@@ -33,10 +33,6 @@ runs on device startup) that sets the LEDs and prevents other processes from cha
 them. If you decide you no longer want this functionality, the uninstall action removes
 the daemon and returns LED functionality to stock.
 
-Q: Why can't I change the brightness of the top LED?
-A: The firmware doesn't provide a means of changing it.
-
-
 Notes:
 This is a free app made for fun over christmas break, hopefully you get some joy from messing with your LEDs. 
 If you got this from anywhere other than https://github.com/pierceTee/TrimuiLEDController, 

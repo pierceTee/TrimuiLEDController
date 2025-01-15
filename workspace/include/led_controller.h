@@ -51,6 +51,10 @@ const uint32_t colors[] = {
 };
 
 const int num_color = sizeof(colors) / sizeof(colors[0]);
+
+/* Array of the split suffixs that sont front led files end in*/
+const char *front_led_suffix[2] = {"f1", "f2"};
+
 /**
  * Manage what to do with user input.
  *
@@ -290,12 +294,11 @@ int teardown(CoreSDLComponents *core_components, AdditionalSDLComponents *compon
  *      app_state - state object with user information we're updating.
  *      led - LED to write the data for
  *      filepath - path to the file
- *      suffix - suffix to add to the file path
  *
  * Returns:
  *      void
  */
-void write_max_scale_data(FILE *file, const AppState *app_state, const Led led, char *filepath, const char *suffix);
+void write_max_scale_data(FILE *file, const AppState *app_state, const Led led, char *filepath);
 
 /**
  * Write the effect data to a file.
@@ -305,12 +308,11 @@ void write_max_scale_data(FILE *file, const AppState *app_state, const Led led, 
  *      app_state - state object with user information we're updating.
  *      led - LED to write the data for
  *      filepath - path to the file
- *      suffix - suffix to add to the file path
  *
  * Returns:
  *      void
  */
-void write_effect_data(FILE *file, const AppState *app_state, const Led led, char *filepath, const char *suffix);
+void write_effect_data(FILE *file, const AppState *app_state, const Led led, char *filepath);
 
 /**
  * Write the effect duration data to a file.
@@ -320,12 +322,11 @@ void write_effect_data(FILE *file, const AppState *app_state, const Led led, cha
  *      app_state - state object with user information we're updating.
  *      led - LED to write the data for
  *      filepath - path to the file
- *      suffix - suffix to add to the file path
  *
  * Returns:
  *      void
  */
-void write_effect_duration_data(FILE *file, const AppState *app_state, const Led led, char *filepath, const char *suffix);
+void write_effect_duration_data(FILE *file, const AppState *app_state, const Led led, char *filepath);
 
 /**
  * Write the color data to a file.
@@ -335,12 +336,11 @@ void write_effect_duration_data(FILE *file, const AppState *app_state, const Led
  *      app_state - state object with user information we're updating.
  *      led - LED to write the data for
  *      filepath - path to the file
- *      suffix - suffix to add to the file path
  *
  * Returns:
  *      void
  */
-void write_color_data(FILE *file, const AppState *app_state, const Led led, char *filepath, const char *suffix);
+void write_color_data(FILE *file, const AppState *app_state, const Led led, char *filepath);
 
 /**
  * Write user selection data to the associated LED files.
