@@ -184,6 +184,8 @@ Pierce
 
 - [ro8inmorgan](https://github.com/ro8inmorgan): Their [LedControl](https://github.com/ro8inmorgan/LedControl) application helped me fix some bugs/functionality in this application.
 
+- Retro Handhelds discord users: `Heef` , `Richard(RJNY)`, and `seki`. The app wouldn't be half as polished without their testing and feedback.
+
 # TODO 
 - Smart pro support.
 - Separate core sdl functionality to its own repo to import as a submodule for future apps?
