@@ -2,7 +2,7 @@ This application is designed for the TrimUI smart Brick emulation handheld.
 There has been no testing of operational safety on any other hardware.
  
 
-Stock OS: Place the "LedController" folder in the "Apps" folder of your SDCARD and launch from the "Apps" menu.
+Stock OS: Place the "LedController.pak" folder in the "Apps" folder of your SDCARD and launch from the "Apps" menu.
 
 MinUI: Place the "LedController.pak" folder in the "Tools/tg3040" folder of your SDCARD and launch from the "Tools" menu.
 
@@ -32,10 +32,6 @@ A: When the application exits normally, I install a settings daemon (a service t
 runs on device startup) that sets the LEDs and prevents other processes from changing
 them. If you decide you no longer want this functionality, the uninstall action removes
 the daemon and returns LED functionality to stock.
-
-Q: Why can't I change the brightness of the top LED?
-A: The firmware doesn't provide a means of changing it.
-
 
 Notes:
 This is a free app made for fun over christmas break, hopefully you get some joy from messing with your LEDs. 

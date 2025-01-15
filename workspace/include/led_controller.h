@@ -15,14 +15,6 @@ SDL_Color text_shadow_color = {0, 0, 0, 128};
 
 /* The list of colors we support */
 const uint32_t colors[] = {
-    // Reds
-    0xFF0000, // Red
-    0xFF8080, // Light Red
-    0x800000, // Maroon
-    // Pinks
-    0xFF0080, // Hot Pink
-    // Oranges
-    0xFF8000, // Orange
 
     // Greens
     0x00FF00, // Green
@@ -35,22 +27,29 @@ const uint32_t colors[] = {
     // Blues
     0x0000FF, // Blue
     0x0080FF, // Sky Blue
-    0x000080, // Navy
 
     // Cyans
     0x00FFFF, // Cyan
     0x008080, // Teal
 
+    // Oranges
+    0xFF8000, // Orange
+    // Reds
+    0xFF0000, // Red
     // Magentas
     0xFF00FF, // Magenta
     0xFF80C0, // Light Magenta
+    // Pinks
+    0xFF0080, // Hot Pink
 
-    // Whites
-    0xFFFFFF, // White
-
+    0xFF8080, // Light Red
 };
 
 const int num_color = sizeof(colors) / sizeof(colors[0]);
+
+/* Array of the split suffixs that sont front led files end in*/
+const char *front_led_suffix[2] = {"f1", "f2"};
+
 /**
  * Manage what to do with user input.
  *
@@ -290,12 +289,11 @@ int teardown(CoreSDLComponents *core_components, AdditionalSDLComponents *compon
  *      app_state - state object with user information we're updating.
  *      led - LED to write the data for
  *      filepath - path to the file
- *      suffix - suffix to add to the file path
  *
  * Returns:
  *      void
  */
-void write_max_scale_data(FILE *file, const AppState *app_state, const Led led, char *filepath, const char *suffix);
+void write_max_scale_data(FILE *file, const AppState *app_state, const Led led, char *filepath);
 
 /**
  * Write the effect data to a file.
@@ -305,12 +303,11 @@ void write_max_scale_data(FILE *file, const AppState *app_state, const Led led, 
  *      app_state - state object with user information we're updating.
  *      led - LED to write the data for
  *      filepath - path to the file
- *      suffix - suffix to add to the file path
  *
  * Returns:
  *      void
  */
-void write_effect_data(FILE *file, const AppState *app_state, const Led led, char *filepath, const char *suffix);
+void write_effect_data(FILE *file, const AppState *app_state, const Led led, char *filepath);
 
 /**
  * Write the effect duration data to a file.
@@ -320,12 +317,11 @@ void write_effect_data(FILE *file, const AppState *app_state, const Led led, cha
  *      app_state - state object with user information we're updating.
  *      led - LED to write the data for
  *      filepath - path to the file
- *      suffix - suffix to add to the file path
  *
  * Returns:
  *      void
  */
-void write_effect_duration_data(FILE *file, const AppState *app_state, const Led led, char *filepath, const char *suffix);
+void write_effect_duration_data(FILE *file, const AppState *app_state, const Led led, char *filepath);
 
 /**
  * Write the color data to a file.
@@ -335,12 +331,11 @@ void write_effect_duration_data(FILE *file, const AppState *app_state, const Led
  *      app_state - state object with user information we're updating.
  *      led - LED to write the data for
  *      filepath - path to the file
- *      suffix - suffix to add to the file path
  *
  * Returns:
  *      void
  */
-void write_color_data(FILE *file, const AppState *app_state, const Led led, char *filepath, const char *suffix);
+void write_color_data(FILE *file, const AppState *app_state, const Led led, char *filepath);
 
 /**
  * Write user selection data to the associated LED files.
@@ -376,4 +371,38 @@ void install_daemon();
  *      void
  */
 void uninstall_daemon();
+
+/**
+ * Quick action that matches all LED colors to the current
+ *
+ * Parameters:
+ *      app_state - state object with user information we're updating.
+ *
+ * Returns:
+ *      void
+ */
+void color_match_leds(AppState *app_state);
+
+/**
+ * Turn off all LEDs.
+ *
+ * Parameters:
+ *      app_state - state object with led information that must be updated.
+ *
+ * Returns:
+ *      void
+ */
+void turn_off_all_leds(AppState *app_state);
+
+/**
+ * Turn on all LEDs.
+ *
+ * Parameters:
+ *      app_state - state object with led information that must be updated.
+ *
+ * Returns:
+ *      void
+ */
+void turn_on_all_leds(AppState *app_state);
+
 #endif

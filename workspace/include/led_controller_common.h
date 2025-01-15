@@ -34,7 +34,7 @@
 /* FRONT, TOP, BACK */
 #define LED_COUNT 3
 /* brightness, effect, color, duration */
-#define LED_SETTINGS_COUNT 5
+#define LED_SETTINGS_COUNT 6
 
 /* enable all, disable all, uninstall, quit*/
 #define MENU_OPTION_COUNT 4
@@ -86,6 +86,7 @@ typedef enum
   EFFECT,
   DURATION,
   COLOR,
+  MATCH_SETTINGS
 } LedSettingOption;
 
 /* The different menu options we provide */

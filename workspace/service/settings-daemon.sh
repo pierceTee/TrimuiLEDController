@@ -26,7 +26,12 @@ apply_led_settings() {
         echo $effect > "$SYS_FILE_PATH/effect_f1"
         echo $effect > "$SYS_FILE_PATH/effect_f2"
     else
-        echo $brightness > "$SYS_FILE_PATH/max_scale_$led"
+        if [ "$led" = "m" ]; then
+            # Why are you like this TrimUI?
+            echo $brightness > "$SYS_FILE_PATH/max_scale"
+        else
+            echo $brightness > "$SYS_FILE_PATH/max_scale_$led"
+        fi
         echo $color > "$SYS_FILE_PATH/effect_rgb_hex_$led"
         echo $duration > "$SYS_FILE_PATH/effect_duration_$led"
         echo $effect > "$SYS_FILE_PATH/effect_$led"

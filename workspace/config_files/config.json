@@ -1,7 +1,7 @@
 {
   "label": "LED Controller",
-  "icon": "images/icon.png",
-  "iconsel": "images/icon.png",
+  "icon": "assets/images/icon.png",
+  "iconsel": "assets/images/icon.png",
   "launch": "launch.sh",
   "description": "Configure the LEDs on your triumUI device"
 }
