@@ -19,6 +19,7 @@ led_controller:
 
 package: all
 	mkdir -p $(RELEASE_DIR)
+	cp github/readme.txt $(RELEASE_DIR)/
 
 	# Create general project package
 	mkdir -p $(RELEASE_DIR)/$(PROJECT_NAME)/scripts
