@@ -162,5 +162,4 @@ Pierce
 
 # TODO 
 - Smart pro support.
-- Consider dropping brightness support.
-- Release.
+- Separate core sdl functionality to its own repo to import as a submodule for future apps?
