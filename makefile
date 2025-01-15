@@ -45,7 +45,7 @@ release: package
 	cd $(RELEASE_DIR) && zip -r github/$(PROJECT_NAME).zip . -x "github/*"
 	cd - 
 	# zip up all the source code
-	zip -r $(RELEASE_DIR)/github/source_code.zip . -x "release/*" "build/* .git/*" ".github/*"
+	zip -r $(RELEASE_DIR)/github/source_code.zip . -x "release/*" "build/*" ".git/*" ".github/*"
 	chmod -R a+rwx $(RELEASE_DIR)/github
 
 clean:
