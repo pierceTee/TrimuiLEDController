@@ -102,8 +102,7 @@ typedef struct
 {
   SDL_Texture *backgroundTexture;
   SDL_Texture *menuTexture;
-  TTF_Font *config_font;
-  TTF_Font *menu_font;
+  TTF_Font *font;
 } AdditionalSDLComponents;
 
 /* Cluster of all mutable user-interface related objects */
