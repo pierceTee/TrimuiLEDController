@@ -5,153 +5,15 @@
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>
 #include "sdl_base.h"
-
-// ** File locations **
-#define IMAGE_DIR "assets/images"
-#define BACKGROUND_IMAGE_PATH "assets/images/background.png"
-#define MENU_IMAGE_PATH "assets/images/main_menu.png"
-#define BRICK_SPRITE_SHEET_PATH "assets/images/brick_sprite_sheet.png"
-#define FONT_PATH "assets/retro_gaming.ttf"
-#define SETTINGS_FILE "settings.ini"
-#define UPDATE_LED_SYS_FILES_SCRIPT "./update_led_sys_files.sh"
-/* Location of system files we need to edit to change LEDs */
-#define SYS_FILE_PATH "/sys/class/led_anim"
-
-// ** SDL/Animation Consts **
-/* TrimUI Brick WxH */
-#define WINDOW_WIDTH 1024
-#define WINDOW_HEIGHT 768
-#define FONT_SIZE 34
-#define WINDOW_TITLE "Led Controller"
-#define BRICK_SPRITE_HEIGHT 512
-#define BRICK_SPRITE_WIDTH 512
-
-/* Indicator to render current user selection (i.e '>>> Brightness: 100') */
-#define MENU_CARRET_LEFT "<  "
-#define MENU_CARRET_RIGHT "  >"
-
-//  ** Settings Consts **
-/* FRONT, TOP, BACK */
-#define LED_COUNT 3
-/* brightness, effect, color, duration */
-#define LED_SETTINGS_COUNT 5
-
-/* enable all, disable all, uninstall, quit*/
-#define MENU_OPTION_COUNT 4
-
-/* DISABLE, LINEAR, BREATH, SNIFF, STATIC, BLINK1, BLINK2, BLINK3 */
-#define ANIMATION_EFFECT_COUNT 8
-/* 0xRRGGBBAA */
-#define COLOR_HEX_LENGTH 8
-/* Maximum brightness value allowed by trimui firmware */
-#define MAX_BRIGHTNESS 200
-/* Maximum duration to cycle a lighting effect */
-#define MAX_DURATION 5000
-/* How much to increment duration by when the user increases/decreases */
-#define DURATION_INCREMENT 500
-/* How much to increment the brightness by when increasing/decreasing */
-#define BRIGHTNESS_INCREMENT 10
-/* How many colors we support */
-#define NUM_COLORS 17
-/* Application Consts */
-#define STRING_LENGTH 256
+#include "led_controller_common.h"
 
 /* Eggshell white color for main text */
-const SDL_Color text_color = {255, 239, 186, 255};
+SDL_Color text_color = {255, 239, 186, 255};
 
 /* Semi-transparent black for shadow */
-const SDL_Color text_shadow_color = {0, 0, 0, 128};
+SDL_Color text_shadow_color = {0, 0, 0, 128};
 
-/* The different Led clusters we support */
-typedef enum
-{
-    LED_FRONT,
-    LED_TOP,
-    LED_BACK,
-} Led;
-
-/* The different Animation effect options recognized by the TrimUI firmware */
-/* Reference:  "/sys/class/led_anim/help" */
-typedef enum
-{
-    DISABLE,
-    LINEAR,
-    BREATH,
-    SNIFF,
-    STATIC,
-    BLINK1,
-    BLINK2,
-    BLINK3
-} AnimationEffect;
-
-/* The different LED functions we support modifying */
-typedef enum
-{
-    SELECTED_LED,
-    BRIGHTNESS,
-    EFFECT,
-    DURATION,
-    COLOR,
-} LedSettingOption;
-
-/* The different menu options we provide */
-typedef enum
-{
-    ENABLE_ALL,
-    DISABLE_ALL,
-    UNINSTALL,
-    QUIT,
-} MenuOption;
-
-/* SDL Extended set of components required by this application not covered in sdl_base::CoreSDLComponents */
-typedef struct
-{
-    SDL_Texture *backgroundTexture;
-    SDL_Texture *menuTexture;
-    TTF_Font *font;
-} AdditionalSDLComponents;
-
-/* Cluster of all mutable user-interface related objects */
-typedef struct
-{
-    SDL_Color text_shadow_color;
-    SDL_Color text_color;
-    SDL_Color text_highlight_color;
-    SDL_Texture **menu_text_textures;
-    char **menu_text;
-    int item_count;
-    int string_length;
-
-} SelectableMenuItems;
-
-/* Collection of values for each supported LED setting. */
-typedef struct
-{
-    int brightness;
-    AnimationEffect effect;
-    uint32_t color;
-    int duration;
-} LedSettings;
-
-typedef enum
-{
-    CONFIG_PAGE,
-    MENU_PAGE,
-} ApplicationPage;
-
-typedef struct
-{
-    bool should_save_settings;
-    bool should_update_leds;
-    bool should_quit;
-    bool should_install_daemon;
-    ApplicationPage current_page;
-    Led selected_led;
-    LedSettingOption selected_setting;
-    MenuOption selected_menu_option;
-    LedSettings led_settings[LED_COUNT];
-} AppState;
-
+/* The list of colors we support */
 const uint32_t colors[] = {
     // Reds
     0xFF0000, // Red
@@ -188,8 +50,6 @@ const uint32_t colors[] = {
 
 };
 
-char *color_to_string(uint32_t color);
-
 const int num_color = sizeof(colors) / sizeof(colors[0]);
 /**
  * Manage what to do with user input.
@@ -209,7 +69,7 @@ const int num_color = sizeof(colors) / sizeof(colors[0]);
 void handle_user_input(InputType user_input, AppState *app_state);
 
 /**
- * Handle changes to the selected setting.
+ * Control what happens when a LED setting is changed.
  *
  * Parameters:
  *      app_state - state object with user information we're updating.
@@ -219,7 +79,17 @@ void handle_user_input(InputType user_input, AppState *app_state);
  */
 void handle_change_setting(AppState *app_state, int change);
 
+/**
+ * Control what happens when a menu option is selected.
+ *
+ * Parameters:
+ *      app_state - state object with user information we're updating.
+ *      selected_menu_option - the menu option selected.
+ * Returns:
+ *      void
+ */
 void handle_menu_select(AppState *app_state, MenuOption selected_menu_option);
+
 /**
  * Initialize any SDL components needed by the application that aren't
  * already initialized by initialize_sdl_core.
@@ -257,6 +127,17 @@ int initialize_app_state(AppState *app_state);
  */
 void initialize_config_page_ui(SelectableMenuItems *menu_items, CoreSDLComponents *core_components, AdditionalSDLComponents *components);
 
+/**
+ * Initialize the main menu (start screen) user interface.
+ *
+ * Parameters:
+ *    menu_items - user interface object to initialize
+ *    core_components - core SDL components
+ *    components - SDL components specific to this application
+ *
+ * Returns:
+ *   void
+ */
 void initialize_menu_ui(SelectableMenuItems *menu_items, CoreSDLComponents *core_components, AdditionalSDLComponents *components);
 
 /**
@@ -281,19 +162,19 @@ void free_menu_items(SelectableMenuItems *menu_items);
  */
 void update_menu_ui_text(SelectableMenuItems *menu_items, const CoreSDLComponents *core_components, const AdditionalSDLComponents *components, const AppState *app_state);
 
-void update_config_page_ui_text(SelectableMenuItems *menu_items, const CoreSDLComponents *core_components, const AdditionalSDLComponents *components, const AppState *app_state);
 /**
- * Clamp a value between a minimum and maximum value.
+ * Update the config page (start menu) user interface text.
  *
  * Parameters:
- *      value - the value to clamp
- *      min - the minimum value
- *      max - the maximum value
+ *    menu_items - user interface object to update
+ *    core_components - core SDL components
+ *    components - SDL components specific to this application
+ *    app_state - state object with user information we're updating.
  *
  * Returns:
- *      the clamped value
+ *   void
  */
-int clamp(int value, int min, int max);
+void update_config_page_ui_text(SelectableMenuItems *menu_items, const CoreSDLComponents *core_components, const AdditionalSDLComponents *components, const AppState *app_state);
 
 /**
  * Read settings from a file.
@@ -317,6 +198,16 @@ int read_settings(AppState *app_state);
  */
 int save_settings(AppState *app_state);
 
+/**
+ * Initialize the Sprite object responsible for rendering the brick animations.
+ *
+ * Parameters:
+ *      brick_sprite - sprite object to initialize
+ *      renderer - SDL renderer to draw to
+ *
+ * Returns:
+ *      0 on success, 1 on failure
+ */
 int initialize_brick_sprite(Sprite *brick_sprite, SDL_Renderer *renderer);
 
 /**
@@ -356,77 +247,7 @@ void render_menu_items(SDL_Renderer *renderer, SelectableMenuItems *menu_items, 
  * Returns:
  *      SDL_Surface containing the image
  */
-SDL_Surface *load_image(char *image_name);
-
-/**
- * Convert an animation effect to a string.
- *
- * Parameters:
- *      effect - animation effect to convert
- *
- * Returns:
- *      string containing the animation effect
- */
-char *animation_effect_to_string(AnimationEffect effect);
-
-/**
- * Convert a LED setting option to a string.
- *
- * Parameters:
- *      setting - LED setting option to convert
- *
- * Returns:
- *      string containing the LED setting option
- */
-char *led_setting_option_to_string(LedSettingOption setting);
-
-char *menu_option_to_string(MenuOption option);
-
-/**
- * Convert a LED to a string.
- *
- * Parameters:
- *      led - LED to convert
- *
- * Returns:
- *      string containing the LED
- */
-char *led_to_string(Led led);
-
-/**
- * Get the internal name of a LED.
- *
- * Parameters:
- *      led - LED to get the internal name of
- *
- * Returns:
- *      string containing the internal name of the LED
- */
-char *led_internal_name(Led led);
-
-/**
- * Convert an internal LED name to an index.
- *
- * Parameters:
- *      led_name - internal name of the LED
- *
- * Returns:
- *     Led object
- */
-Led internal_led_name_to_led(char *led_name);
-
-/**
-
- * Log a debug message.
- *
- * Parameters:
- *      message - message to log
- *      verbose_logging_enabled - flag to enable verbose logging
- *
- * Returns:
- *      void
- */
-void debug_log(char *message, bool verbose_logging_enabled);
+SDL_Surface *load_image(const char *image_name);
 
 /**
  * Update the LED system files.
@@ -536,7 +357,23 @@ void write_color_data(FILE *file, const AppState *app_state, const Led led, char
  */
 void update_leds(AppState *app_state);
 
+/**
+ * Install the daemon.
+ *
+ *  Runs the install.sh script to install the daemon.
+ *
+ * Returns:
+ *      void
+ */
 void install_daemon();
 
+/**
+ * Uninstall the daemon.
+ *
+ *  Runs the uninstall.sh script to uninstall the daemon.
+ *
+ * Returns:
+ *      void
+ */
 void uninstall_daemon();
 #endif

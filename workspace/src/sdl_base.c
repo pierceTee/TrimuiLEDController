@@ -130,7 +130,7 @@ void update_sprite_render(SDL_Renderer *renderer, Sprite *sprite, int position_x
     }
 }
 
-SDL_Texture *create_sdl_texture_from_image(SDL_Renderer *renderer, char *full_image_path)
+SDL_Texture *create_sdl_texture_from_image(SDL_Renderer *renderer, const char *full_image_path)
 {
     SDL_Surface *surface = IMG_Load(full_image_path);
     if (!surface)

@@ -15,7 +15,7 @@ all: led_controller
 
 led_controller:
 	mkdir -p $(BUILD_DIR)
-	$(CC) $(CFLAGS) -o $(BUILD_DIR)/led_controller workspace/src/led_controller.c workspace/src/sdl_base.c $(LDFLAGS)
+	$(CC) $(CFLAGS) -o $(BUILD_DIR)/led_controller workspace/src/led_controller_common.c workspace/src/led_controller.c workspace/src/sdl_base.c  $(LDFLAGS)
 
 package: all
 	mkdir -p $(RELEASE_DIR)
