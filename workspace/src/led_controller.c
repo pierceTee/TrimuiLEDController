@@ -368,7 +368,7 @@ int initialize_additional_sdl_components(CoreSDLComponents *core_components, Add
     }
 
     /* Load font */
-    components->font = TTF_OpenFont("assets/retro_gaming.ttf", 34); /* Specify your font path */
+    components->font = TTF_OpenFont("assets/retro_gaming.ttf", 32); /* Specify your font path */
     if (!components->font)
     {
         SDL_Log("Failed to load font! TTF_Error: %s\n", TTF_GetError());
@@ -485,7 +485,7 @@ void update_config_page_ui_text(SelectableMenuItems *menu_items, const CoreSDLCo
             /* Write menu text to string */
             snprintf(menu_items->menu_text[setting_index],
                      menu_items->string_length, "%sBrightness: %d%s", selected_setting == BRIGHTNESS ? MENU_CARRET_LEFT : "",
-                     app_state->led_settings[app_state->selected_led].brightness,
+                     app_state->led_settings[app_state->selected_led].brightness / BRIGHTNESS_INCREMENT,
                      selected_setting == BRIGHTNESS ? MENU_CARRET_RIGHT : "");
             break;
         case EFFECT:
@@ -506,7 +506,7 @@ void update_config_page_ui_text(SelectableMenuItems *menu_items, const CoreSDLCo
         case DURATION:
             snprintf(menu_items->menu_text[setting_index],
                      menu_items->string_length,
-                     "%sDuration:  %dms%s",
+                     "%sDuration: %dms%s",
                      selected_setting == DURATION ? MENU_CARRET_LEFT : "",
                      app_state->led_settings[app_state->selected_led].duration,
                      selected_setting == DURATION ? MENU_CARRET_RIGHT : "");

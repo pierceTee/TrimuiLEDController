@@ -44,7 +44,8 @@
 /* 0xRRGGBBAA */
 #define COLOR_HEX_LENGTH 8
 /* Maximum brightness value allowed by trimui firmware */
-#define MAX_BRIGHTNESS 200
+
+#define MAX_BRIGHTNESS 100
 /* Maximum duration to cycle a lighting effect */
 #define MAX_DURATION 5000
 /* How much to increment duration by when the user increases/decreases */
