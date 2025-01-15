@@ -670,7 +670,7 @@ void render_menu_items(SDL_Renderer *renderer, SelectableMenuItems *menu_items, 
     }
 }
 
-SDL_Surface *load_image(char *image_name)
+SDL_Surface *load_image(const char *image_name)
 {
     char image_path[STRING_LENGTH];
     snprintf(image_path, sizeof(image_path), "%s/%s", IMAGE_DIR, image_name);
@@ -682,7 +682,7 @@ SDL_Surface *load_image(char *image_name)
     return surface;
 }
 
-char *animation_effect_to_string(AnimationEffect effect)
+const char *animation_effect_to_string(AnimationEffect effect)
 {
     switch (effect)
     {
@@ -707,7 +707,7 @@ char *animation_effect_to_string(AnimationEffect effect)
     }
 }
 
-char *color_to_string(uint32_t color)
+const char *color_to_string(uint32_t color)
 {
     static char hex_color[STRING_LENGTH];
     switch (color)
@@ -752,7 +752,7 @@ char *color_to_string(uint32_t color)
     }
 }
 
-char *led_setting_option_to_string(LedSettingOption setting)
+const char *led_setting_option_to_string(LedSettingOption setting)
 {
     switch (setting)
     {
@@ -772,7 +772,7 @@ char *led_setting_option_to_string(LedSettingOption setting)
     }
 }
 
-char *menu_option_to_string(MenuOption option)
+const char *menu_option_to_string(MenuOption option)
 {
     switch (option)
     {
@@ -789,7 +789,7 @@ char *menu_option_to_string(MenuOption option)
     }
 }
 
-char *led_to_string(Led led)
+const char *led_to_string(Led led)
 {
     switch (led)
     {
@@ -804,7 +804,7 @@ char *led_to_string(Led led)
     }
 }
 
-char *led_internal_name(Led led)
+const char *led_internal_name(Led led)
 {
     switch (led)
     {
@@ -819,7 +819,7 @@ char *led_internal_name(Led led)
     }
 }
 
-Led internal_led_name_to_led(char *led_name)
+Led internal_led_name_to_led(const char *led_name)
 {
     if (strcmp(led_name, "f1f2") == 0)
     {
@@ -839,7 +839,7 @@ Led internal_led_name_to_led(char *led_name)
     }
 }
 
-void debug_log(char *message, bool verbose_logging_enabled)
+void debug_log(const char *message, bool verbose_logging_enabled)
 {
     if (verbose_logging_enabled)
     {

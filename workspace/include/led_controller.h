@@ -188,7 +188,7 @@ const uint32_t colors[] = {
 
 };
 
-char *color_to_string(uint32_t color);
+const char *color_to_string(uint32_t color);
 
 const int num_color = sizeof(colors) / sizeof(colors[0]);
 /**
@@ -356,7 +356,7 @@ void render_menu_items(SDL_Renderer *renderer, SelectableMenuItems *menu_items, 
  * Returns:
  *      SDL_Surface containing the image
  */
-SDL_Surface *load_image(char *image_name);
+SDL_Surface *load_image(const char *image_name);
 
 /**
  * Convert an animation effect to a string.
@@ -367,7 +367,7 @@ SDL_Surface *load_image(char *image_name);
  * Returns:
  *      string containing the animation effect
  */
-char *animation_effect_to_string(AnimationEffect effect);
+const char *animation_effect_to_string(AnimationEffect effect);
 
 /**
  * Convert a LED setting option to a string.
@@ -378,9 +378,9 @@ char *animation_effect_to_string(AnimationEffect effect);
  * Returns:
  *      string containing the LED setting option
  */
-char *led_setting_option_to_string(LedSettingOption setting);
+const char *led_setting_option_to_string(LedSettingOption setting);
 
-char *menu_option_to_string(MenuOption option);
+const char *menu_option_to_string(MenuOption option);
 
 /**
  * Convert a LED to a string.
@@ -391,7 +391,7 @@ char *menu_option_to_string(MenuOption option);
  * Returns:
  *      string containing the LED
  */
-char *led_to_string(Led led);
+const char *led_to_string(Led led);
 
 /**
  * Get the internal name of a LED.
@@ -402,7 +402,7 @@ char *led_to_string(Led led);
  * Returns:
  *      string containing the internal name of the LED
  */
-char *led_internal_name(Led led);
+const char *led_internal_name(Led led);
 
 /**
  * Convert an internal LED name to an index.
@@ -413,7 +413,7 @@ char *led_internal_name(Led led);
  * Returns:
  *     Led object
  */
-Led internal_led_name_to_led(char *led_name);
+Led internal_led_name_to_led(const char *led_name);
 
 /**
 
@@ -426,7 +426,7 @@ Led internal_led_name_to_led(char *led_name);
  * Returns:
  *      void
  */
-void debug_log(char *message, bool verbose_logging_enabled);
+void debug_log(const char *message, bool verbose_logging_enabled);
 
 /**
  * Update the LED system files.

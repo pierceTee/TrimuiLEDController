@@ -153,7 +153,7 @@ InputType sdl_event_to_input_type(SDL_Event *event, bool verbose);
  * Returns:
  *      SDL_Texture pointer containing the image.
  */
-SDL_Texture *create_sdl_texture_from_image(SDL_Renderer *renderer, char *full_image_path);
+SDL_Texture *create_sdl_texture_from_image(SDL_Renderer *renderer, const char *full_image_path);
 
 /**
  * Create a text texture from a string.
