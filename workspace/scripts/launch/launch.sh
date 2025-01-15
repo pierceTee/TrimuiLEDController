@@ -29,6 +29,3 @@ echo "[`date '+%Y-%m-%d %H:%M:%S'`][$SCRIPT_NAME]: Disabling write permissions o
 chmod a-w $BASE_LED_PATH/* >> $LOG_FILE
 
 echo "[`date '+%Y-%m-%d %H:%M:%S'`][$SCRIPT_NAME]: exiting..."  >> $LOG_FILE
-
-# Ensure no log files in this dir are write-locked and can be deleted
-chmod a+rwx *.log
