@@ -16,6 +16,8 @@ SDL_Color text_shadow_color = {0, 0, 0, 128};
 /* The list of colors we support */
 const uint32_t colors[] = {
 
+    // White
+    0xFFFFFF, // White
     // Greens
     0x00FF00, // Green
     0x00FF80, // Aqua
