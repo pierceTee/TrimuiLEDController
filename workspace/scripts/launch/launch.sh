@@ -21,7 +21,7 @@ chmod a+w $BASE_LED_PATH/* >> $LOG_FILE
 
 # turn LEDS on
 echo "[`date '+%Y-%m-%d %H:%M:%S'`][$SCRIPT_NAME]: Turning on all LEDs"  >> $LOG_FILE
- ./scripts/turn_on_leds.sh >> $LOG_FILE
+./scripts/turn_on_all_leds.sh >> $LOG_FILE
 
 echo "[`date '+%Y-%m-%d %H:%M:%S'`][$SCRIPT_NAME]: Launching led_controller..."  >> $LOG_FILE
 
