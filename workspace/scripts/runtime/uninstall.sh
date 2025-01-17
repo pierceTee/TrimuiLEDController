@@ -9,5 +9,5 @@ echo "[`date '+%Y-%m-%d %H:%M:%S'`][$SCRIPT_NAME]: Removing all led_controller f
 rm /etc/rc.d/*led-settings-daemon
 rm /etc/init.d/led-settings-daemon
 rm -rf $SERVICE_PATH
-
+chmod a+w $BASE_LED_PATH/*
 echo "[`date '+%Y-%m-%d %H:%M:%S'`][$SCRIPT_NAME]: exiting ..."
