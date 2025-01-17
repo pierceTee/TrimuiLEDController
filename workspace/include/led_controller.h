@@ -312,13 +312,16 @@ void update_led_sys_files();
  * Parameters:
  *      core_components - core SDL components
  *      components - SDL components specific to this application
- *      menu_items - user interface object to teardown
+ *      config_menu_items - user interface object to teardown
+ *      main_menu_items - user interface object to teardown
+ *      brick_sprite - sprite object to teardown
+ *      app_state - state object used to determine return code
  *
  * Returns:
- *      0 on success, 1 on failure
+ *      0 on success, a numeric error code on failure
  */
 int teardown(CoreSDLComponents *core_components, AdditionalSDLComponents *components,
-             SelectableMenuItems *config_menu_items, SelectableMenuItems *main_menu_items, Sprite *brick_sprite);
+             SelectableMenuItems *config_menu_items, SelectableMenuItems *main_menu_items, Sprite *brick_sprite, AppState *app_state);
 /**
  * Write the max scale data to a file.
  *
