@@ -76,7 +76,6 @@ uint32_t next_color(uint32_t color, int sign)
   int16_t g = (color >> 8) & 0xFF;
   int16_t b = color & 0xFF;
 
-  printf("==> START r: %d, g: %d, b: %d\n", r, g, b);
   // Red -> Yellow -> Green -> Cyan -> Blue -> Magenta -> Red
   if (r == 255 && g < 255 && b == 0)
   { // Red to Yellow
@@ -132,7 +131,6 @@ uint32_t next_color(uint32_t color, int sign)
     g = 0;
     b = 0;
   }
-  printf("==> FINISH r: %d, g: %d, b: %d\n", r, g, b);
   return ((uint32_t)r << 16) | ((uint32_t)g << 8) | (uint32_t)b;
 }
 
