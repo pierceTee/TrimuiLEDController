@@ -76,7 +76,6 @@ uint32_t next_color(uint32_t color, int sign)
   int16_t g = (color >> 8) & 0xFF;
   int16_t b = color & 0xFF;
 
-  printf("==> START r: %d, g: %d, b: %d\n", r, g, b);
   // Red -> Yellow -> Green -> Cyan -> Blue -> Magenta -> Red
   if (r == 255 && g < 255 && b == 0)
   { // Red to Yellow
@@ -132,7 +131,6 @@ uint32_t next_color(uint32_t color, int sign)
     g = 0;
     b = 0;
   }
-  printf("==> FINISH r: %d, g: %d, b: %d\n", r, g, b);
   return ((uint32_t)r << 16) | ((uint32_t)g << 8) | (uint32_t)b;
 }
 
@@ -162,13 +160,18 @@ const char *menu_option_to_string(MenuOption option, const AppState *app_state)
   {
   case TOGGLE_EXTENDED_COLORS:
     if (app_state->are_extended_colors_enabled)
-      return "Disable Extended Colors";
+      return "Disable extended colors";
     else
-      return "Enable Extended Colors";
+      return "Enable extended colors";
+  case TOGGLE_LOW_BATTERY_INDICATION:
+    if (app_state->should_enable_low_battery_indication)
+      return "Disable low battery warning";
+    else
+      return "Enable low battery warning";
   case ENABLE_ALL:
-    return "Turn on all LEDs";
+    return "Turn ON all LEDs";
   case DISABLE_ALL:
-    return "Turn off all LEDs";
+    return "Turn OFF all LEDs";
   case UNINSTALL:
     return "Uninstall";
   case QUIT:
