@@ -317,24 +317,6 @@ InputType sdl_event_to_input_type(SDL_Event *event, bool verbose)
                 return UNKNOWN;
             }
         }
-        else if (event->type == SDL_CONTROLLERBUTTONUP)
-        {
-            if (verbose)
-            {
-                SDL_Log("Controller button up event: %d|0x%x \n", event->cbutton.button, event->cbutton.button);
-            }
-            switch (event->cbutton.button)
-            {
-            case SDL_CONTROLLER_BUTTON_DPAD_UP:
-                return DPAD_RELEASE;
-            case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
-                return DPAD_RELEASE;
-            case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
-                return DPAD_RELEASE;
-            case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
-                return DPAD_RELEASE;
-            }
-        }
     }
     return UNKNOWN;
 };
