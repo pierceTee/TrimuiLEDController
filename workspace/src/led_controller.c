@@ -273,7 +273,6 @@ void handle_menu_select(AppState *app_state, MenuOption selected_menu_option)
         break;
     case UNINSTALL:
         uninstall_daemon();
-        // turn_off_all_leds(app_state);
         app_state->should_install_daemon = false;
         app_state->should_quit = true;
         break;
@@ -811,18 +810,15 @@ void update_leds(AppState *app_state)
         write_effect_duration_data(file, app_state, led, filepath);
         write_effect_data(file, app_state, led, filepath);
     }
-    SDL_Log("Leds Updated");
 }
 
 void install_daemon()
 {
-    SDL_Log("install_daemon()");
     system("sh scripts/install.sh");
 }
 
 void uninstall_daemon()
 {
-    SDL_Log("uninstall_daemon()");
     system("sh scripts/uninstall.sh");
 }
 

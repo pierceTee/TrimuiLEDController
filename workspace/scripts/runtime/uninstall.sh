@@ -12,7 +12,6 @@ rm /etc/rc.d/*led-settings-daemon
 rm /etc/init.d/led-settings-daemon
 rm -rf $SERVICE_PATH
 
-
 # Restore the stock low battery LED script
 if [ -f "/usr/trimui/bin/low_battery_led.sh.bak" ]; then
   echo "[`date '+%Y-%m-%d %H:%M:%S'`][$SCRIPT_NAME]: Restoring stock low battery LED script ..."
