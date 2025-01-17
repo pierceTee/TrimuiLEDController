@@ -64,6 +64,7 @@ typedef enum
     DPAD_RIGHT,
     DPAD_UP,
     DPAD_DOWN,
+    DPAD_RELEASE,
     A,
     B,
     X,

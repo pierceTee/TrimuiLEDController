@@ -55,6 +55,8 @@
 #define NUM_COLORS 17
 /* Application Consts */
 #define STRING_LENGTH 256
+/*How much to increment/decrement the color when the user changes the value in extened color mode*/
+#define COLOR_CYLCE_INCREMENT 16
 
 /* The different Led clusters we support */
 typedef enum
@@ -160,6 +162,15 @@ typedef struct
  */
 const char *color_to_string(uint32_t color);
 
+/**
+ * Cycles to the next color in the color wheel.
+ *
+ * This is used to cycle colors in the extended color mode.
+ * Parameters:
+ *    color - the current 0xRRGGBBAA color to cycle from
+ *   sign - direction to cycle the color
+ */
+uint32_t next_color(uint32_t color, int sign);
 /**
  * Convert an animation effect to a string.
  *
