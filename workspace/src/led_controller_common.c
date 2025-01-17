@@ -162,13 +162,18 @@ const char *menu_option_to_string(MenuOption option, const AppState *app_state)
   {
   case TOGGLE_EXTENDED_COLORS:
     if (app_state->are_extended_colors_enabled)
-      return "Disable Extended Colors";
+      return "Disable extended colors";
     else
-      return "Enable Extended Colors";
+      return "Enable extended colors";
+  case TOGGLE_LOW_BATTERY_INDICATION:
+    if (app_state->should_enable_low_battery_indication)
+      return "Disable low battery warning";
+    else
+      return "Enable low battery warning";
   case ENABLE_ALL:
-    return "Turn on all LEDs";
+    return "Turn ON all LEDs";
   case DISABLE_ALL:
-    return "Turn off all LEDs";
+    return "Turn OFF all LEDs";
   case UNINSTALL:
     return "Uninstall";
   case QUIT:

@@ -37,7 +37,7 @@
 #define LED_SETTINGS_COUNT 6
 
 /* enable all, disable all, uninstall, quit*/
-#define MENU_OPTION_COUNT 5
+#define MENU_OPTION_COUNT 6
 
 /* DISABLE, LINEAR, BREATH, SNIFF, STATIC, BLINK1, BLINK2, BLINK3 */
 #define ANIMATION_EFFECT_COUNT 8
@@ -97,6 +97,7 @@ typedef enum
   ENABLE_ALL,
   DISABLE_ALL,
   TOGGLE_EXTENDED_COLORS,
+  TOGGLE_LOW_BATTERY_INDICATION,
   UNINSTALL,
   QUIT,
 } MenuOption;
@@ -144,6 +145,7 @@ typedef struct
   bool should_quit;
   bool should_install_daemon;
   bool are_extended_colors_enabled;
+  bool should_enable_low_battery_indication;
   ApplicationPage current_page;
   Led selected_led;
   LedSettingOption selected_setting;

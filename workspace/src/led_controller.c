@@ -268,6 +268,9 @@ void handle_menu_select(AppState *app_state, MenuOption selected_menu_option)
     case TOGGLE_EXTENDED_COLORS:
         app_state->are_extended_colors_enabled = !app_state->are_extended_colors_enabled;
         break;
+    case TOGGLE_LOW_BATTERY_INDICATION:
+        app_state->should_enable_low_battery_indication = !app_state->should_enable_low_battery_indication;
+        break;
     case UNINSTALL:
         uninstall_daemon();
         turn_off_all_leds(app_state);
@@ -352,6 +355,7 @@ int initialize_app_state(AppState *app_state)
     app_state->should_quit = false;
     app_state->should_install_daemon = true;
     app_state->are_extended_colors_enabled = false;
+    app_state->should_enable_low_battery_indication = true;
     app_state->current_page = CONFIG_PAGE;
     app_state->selected_menu_option = ENABLE_ALL;
 
@@ -501,7 +505,6 @@ void update_menu_ui_text(SelectableMenuItems *menu_items, const CoreSDLComponent
         menu_items->menu_text_textures[menu_index] = create_text_texture(core_components->renderer, components->font, selected_menu_option == menu_index ? &menu_items->text_highlight_color : &menu_items->text_color, &menu_items->text_shadow_color, menu_items->menu_text[menu_index]);
     }
 }
-
 int read_settings(AppState *app_state)
 {
     FILE *file = fopen(SETTINGS_FILE, "r");
@@ -521,10 +524,27 @@ int read_settings(AppState *app_state)
         char led_name[STRING_LENGTH];
         if (sscanf(line, "[%[^]]]", led_name) == 1)
         {
-            led_index = internal_led_name_to_led(led_name);
+            if (strcmp(led_name, "global") == 0)
+            {
+                led_index = -2; // Special index for global settings
+            }
+            else
+            {
+                led_index = internal_led_name_to_led(led_name);
+            }
             continue;
         }
-        if (led_index >= 0 && led_index < LED_COUNT)
+
+        if (led_index == -2)
+        {
+            // Handle global settings
+            int temp_value;
+            if (sscanf(line, "low_battery_indication=%d", &temp_value) == 1)
+            {
+                app_state->should_enable_low_battery_indication = (temp_value != 0) ? true : false;
+            }
+        }
+        else if (led_index >= 0 && led_index < LED_COUNT)
         {
             sscanf(line, "brightness=%d", &app_state->led_settings[led_index].brightness);
             sscanf(line, "color=%x", &app_state->led_settings[led_index].color);
@@ -550,7 +570,6 @@ int read_settings(AppState *app_state)
 
 int save_settings(AppState *app_state)
 {
-
     app_state->should_save_settings = false;
     FILE *file = fopen(SETTINGS_FILE, "w");
     if (!file)
@@ -561,6 +580,12 @@ int save_settings(AppState *app_state)
     }
 
     SDL_Log("Saving settings to %s ...", SETTINGS_FILE);
+
+    // Save global settings first
+    fprintf(file, "[global]\n");
+    fprintf(file, "low_battery_indication=%d\n\n", app_state->should_enable_low_battery_indication);
+
+    // Save LED-specific settings
     for (int led_index = 0; led_index < LED_COUNT; led_index++)
     {
         fprintf(file, "[%s]\n", led_internal_name(led_index));
@@ -630,7 +655,7 @@ void render_frame(AppState *app_state, CoreSDLComponents *core_components, Addit
     if (app_state->current_page == MENU_PAGE)
     { /* Render menu last on stack if it needs to show*/
         SDL_RenderCopy(core_components->renderer, components->menuTexture, NULL, NULL);
-        render_menu_items(core_components->renderer, menu_page_ui, 250, 250);
+        render_menu_items(core_components->renderer, menu_page_ui, 200, 210);
     }
     /* Main render call to update screen */
     SDL_RenderPresent(core_components->renderer);
@@ -666,7 +691,7 @@ void render_menu_items(SDL_Renderer *renderer, SelectableMenuItems *menu_items, 
 {
     /* x and y UI element spacing. */
     const int x_offset = 20;
-    const int y_offset = 50;
+    const int y_offset = 60;
     for (int item_index = 0; item_index < menu_items->item_count; item_index++)
     {
         render_text_texture(renderer, menu_items->menu_text_textures[item_index], start_x + x_offset, start_y + y_offset * item_index);
