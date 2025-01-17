@@ -1,12 +1,12 @@
 #!/bin/sh
 
-export INSTALL_DIR="/etc/led_controller"
-export SETTINGS_FILE="$INSTALL_DIR/settings.ini"
-export SYS_FILE_PATH="/sys/class/led_anim"
-export SERVICE_PATH="/etc/led_controller"
-export BASE_LED_PATH="/sys/class/led_anim"
-export SCRIPT_NAME=$(basename "$0")
-export LOG_FILE="$INSTALL_DIR/settings_daemon.log"
+INSTALL_DIR="/etc/led_controller"
+SETTINGS_FILE="$INSTALL_DIR/settings.ini"
+SYS_FILE_PATH="/sys/class/led_anim"
+SERVICE_PATH="/etc/led_controller"
+BASE_LED_PATH="/sys/class/led_anim"
+SCRIPT_NAME=$(basename "$0")
+LOG_FILE="$INSTALL_DIR/settings_daemon.log"
 
 # Function to apply settings for a specific LED
 apply_led_settings() {

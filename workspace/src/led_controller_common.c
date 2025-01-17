@@ -65,9 +65,75 @@ const char *color_to_string(uint32_t color)
   case 0xFFFFFF:
     return "White";
   default:
-    snprintf(hex_color, sizeof(hex_color), "0x%08X", color);
-    return "hex_color";
+    snprintf(hex_color, sizeof(hex_color), "0x%06X", color);
+    return hex_color;
   }
+}
+
+uint32_t next_color(uint32_t color, int sign)
+{
+  int16_t r = (color >> 16) & 0xFF;
+  int16_t g = (color >> 8) & 0xFF;
+  int16_t b = color & 0xFF;
+
+  printf("==> START r: %d, g: %d, b: %d\n", r, g, b);
+  // Red -> Yellow -> Green -> Cyan -> Blue -> Magenta -> Red
+  if (r == 255 && g < 255 && b == 0)
+  { // Red to Yellow
+    g = (g + sign * COLOR_CYLCE_INCREMENT);
+    if (g > 255)
+      g = 255;
+    if (g < 0)
+      g = 0;
+  }
+  else if (r > 0 && g == 255 && b == 0)
+  { // Yellow to Green
+    r = (r - sign * COLOR_CYLCE_INCREMENT);
+    if (r > 255)
+      r = 255;
+    if (r < 0)
+      r = 0;
+  }
+  else if (g == 255 && r == 0 && b < 255)
+  { // Green to Cyan
+    b = (b + sign * COLOR_CYLCE_INCREMENT);
+    if (b > 255)
+      b = 255;
+    if (b < 0)
+      b = 0;
+  }
+  else if (g > 0 && b == 255 && r == 0)
+  { // Cyan to Blue
+    g = (g - sign * COLOR_CYLCE_INCREMENT);
+    if (g > 255)
+      g = 255;
+    if (g < 0)
+      g = 0;
+  }
+  else if (b == 255 && g == 0 && r < 255)
+  { // Blue to Magenta
+    r = (r + sign * COLOR_CYLCE_INCREMENT);
+    if (r > 255)
+      r = 255;
+    if (r < 0)
+      r = 0;
+  }
+  else if (r == 255 && g == 0 && b > 0)
+  { // Magenta to Red
+    b = (b - sign * COLOR_CYLCE_INCREMENT);
+    if (b > 255)
+      b = 255;
+    if (b < 0)
+      b = 0;
+  }
+  else
+  { // Initialize to red if no valid state
+    r = 255;
+    g = 0;
+    b = 0;
+  }
+  printf("==> FINISH r: %d, g: %d, b: %d\n", r, g, b);
+  return ((uint32_t)r << 16) | ((uint32_t)g << 8) | (uint32_t)b;
 }
 
 const char *led_setting_option_to_string(LedSettingOption setting)
@@ -90,10 +156,15 @@ const char *led_setting_option_to_string(LedSettingOption setting)
   }
 }
 
-const char *menu_option_to_string(MenuOption option)
+const char *menu_option_to_string(MenuOption option, const AppState *app_state)
 {
   switch (option)
   {
+  case TOGGLE_EXTENDED_COLORS:
+    if (app_state->are_extended_colors_enabled)
+      return "Disable Extended Colors";
+    else
+      return "Enable Extended Colors";
   case ENABLE_ALL:
     return "Turn on all LEDs";
   case DISABLE_ALL:

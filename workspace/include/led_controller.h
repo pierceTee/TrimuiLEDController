@@ -64,10 +64,11 @@ const char *front_led_suffix[2] = {"f1", "f2"};
  *      user_input - pre-processed user input converted from SDL_Event
  *      should_quit - loop control flag to exit the main loop.
  *      app_state - state object with user information we're updating.
+ *      controller - SDL controller object to read dpad hold inputs from.
  * Returns:
  *      void
  */
-void handle_user_input(InputType user_input, AppState *app_state);
+void handle_user_input(InputType user_input, AppState *app_state, SDL_GameController *controller);
 
 /**
  * Control what happens when a LED setting is changed.
@@ -90,6 +91,23 @@ void handle_change_setting(AppState *app_state, int change);
  *      void
  */
 void handle_menu_select(AppState *app_state, MenuOption selected_menu_option);
+
+/**
+ * Handle SDL events and update the application state.
+ * This is the core updater for the main application loop
+ *
+ * Parameters:
+ *     app_state - state object with user information we're updating.
+ *     core_components - core SDL components
+ *     components - SDL components specific to this application
+ *     config_page_ui - user interface object for the config page
+ *     menu_page_ui - user interface object for the menu page
+ *     user_input - pre-processed user input converted from SDL_Event
+ *     event - the SDL event to process
+ */
+void handle_event_updates(AppState *app_state, CoreSDLComponents *core_components, AdditionalSDLComponents *components,
+                          SelectableMenuItems *config_page_ui, SelectableMenuItems *menu_page_ui,
+                          InputType user_input, SDL_Event event);
 
 /**
  * Initialize any SDL components needed by the application that aren't
@@ -135,11 +153,12 @@ void initialize_config_page_ui(SelectableMenuItems *menu_items, CoreSDLComponent
  *    menu_items - user interface object to initialize
  *    core_components - core SDL components
  *    components - SDL components specific to this application
+ *    app_state - AppState object to reference for conditional logic
  *
  * Returns:
  *   void
  */
-void initialize_menu_ui(SelectableMenuItems *menu_items, CoreSDLComponents *core_components, AdditionalSDLComponents *components);
+void initialize_menu_ui(SelectableMenuItems *menu_items, CoreSDLComponents *core_components, AdditionalSDLComponents *components, AppState *app_state);
 
 /**
  * Frees all sub-objects of the menu_items
@@ -212,6 +231,35 @@ int save_settings(AppState *app_state);
 int initialize_brick_sprite(Sprite *brick_sprite, SDL_Renderer *renderer);
 
 /**
+ * Render the main application frame to the screen.
+ * This is a bit of a monolith function to house all the final rendering logic
+ * for the main application loop. As such it takes several inputs.
+ *
+ * Parameters:
+ *     app_state - state object with user information we're updating.
+ *     core_components - core SDL components
+ *     components - SDL components specific to this application
+ *     brick_sprite - sprite object to render
+ *     config_page_ui - user interface object for the config page
+ *     menu_page_ui - user interface object for the menu page
+ *     verbose_logging_enabled - flag to enable verbose logging
+ *
+ */
+void render_frame(AppState *app_state, CoreSDLComponents *core_components, AdditionalSDLComponents *components, Sprite *brick_sprite, SelectableMenuItems *config_page_ui, SelectableMenuItems *menu_page_ui, bool verbose_logging_enabled);
+
+/**
+ * Render a colored square to the screen.
+ *
+ * Parameters:
+ *      app_state - state object with user information we're updating.
+ *      core_components - core SDL components
+ *
+ * Returns:
+ *      void
+ */
+void render_colored_square(AppState *app_state, CoreSDLComponents *core_components);
+
+/**
  * Render a text texture to the screen.
  *
  * Parameters:
@@ -259,30 +307,21 @@ SDL_Surface *load_image(const char *image_name);
 void update_led_sys_files();
 
 /**
- * Render a colored square to the screen.
- *
- * Parameters:
- *      app_state - state object with user information we're updating.
- *      core_components - core SDL components
- *
- * Returns:
- *      void
- */
-void render_colored_square(AppState *app_state, CoreSDLComponents *core_components);
-
-/**
  * Teardown the application.
  *
  * Parameters:
  *      core_components - core SDL components
  *      components - SDL components specific to this application
- *      menu_items - user interface object to teardown
+ *      config_menu_items - user interface object to teardown
+ *      main_menu_items - user interface object to teardown
+ *      brick_sprite - sprite object to teardown
+ *      app_state - state object used to determine return code
  *
  * Returns:
- *      0 on success, 1 on failure
+ *      0 on success, a numeric error code on failure
  */
 int teardown(CoreSDLComponents *core_components, AdditionalSDLComponents *components,
-             SelectableMenuItems *config_menu_items, SelectableMenuItems *main_menu_items, Sprite *brick_sprite);
+             SelectableMenuItems *config_menu_items, SelectableMenuItems *main_menu_items, Sprite *brick_sprite, AppState *app_state);
 /**
  * Write the max scale data to a file.
  *

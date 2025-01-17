@@ -36,9 +36,6 @@ int main(int argc, char *argv[])
     /* SDL event object we read on loop. */
     SDL_Event event;
 
-    /* Log message we display in console if verbose logging is enabled. */
-    char log_message[STRING_LENGTH];
-
     /* Initialize onscreen logging message */
 
     /* Initialize Primary SDL components */
@@ -55,7 +52,7 @@ int main(int argc, char *argv[])
         return 1;
     }
     initialize_config_page_ui(&config_page_ui, &core_components, &components);
-    initialize_menu_ui(&menu_page_ui, &core_components, &components);
+    initialize_menu_ui(&menu_page_ui, &core_components, &components, &app_state);
 
     update_config_page_ui_text(&config_page_ui, &core_components, &components, &app_state);
     update_menu_ui_text(&menu_page_ui, &core_components, &components, &app_state);
@@ -83,54 +80,11 @@ int main(int argc, char *argv[])
             /* Take and process user input. */
             user_input = sdl_event_to_input_type(&event, false);
 
-            handle_user_input(user_input, &app_state);
-
-            if (is_supported_input_event(event.type))
-            {
-                if (app_state.should_update_leds)
-                {
-                    update_leds(&app_state);
-                }
-                /* Save settings if necessary, live changes to the ini are picked up by settings_daemon. */
-                if (app_state.should_save_settings)
-                {
-                    save_settings(&app_state);
-                }
-                /* Update UI text textures */
-                update_config_page_ui_text(&config_page_ui, &core_components, &components, &app_state);
-                update_menu_ui_text(&menu_page_ui, &core_components, &components, &app_state);
-            }
+            handle_event_updates(&app_state, &core_components, &components, &config_page_ui, &menu_page_ui, user_input, event);
         }
 
-        /* Clear screen */
-        SDL_RenderClear(core_components.renderer);
-
-        /* Render background texture */
-        SDL_RenderCopy(core_components.renderer, components.backgroundTexture, NULL, NULL);
-
-        /* Render the user-selected color in front of a black square */
-        render_colored_square(&app_state, &core_components);
-
-        snprintf(log_message, sizeof(log_message), "Selected LED: %d\n", app_state.selected_led);
-        debug_log(log_message, verbose_logging_enabled);
-
-        /* Render brick sprite */
-        brick_sprite.current_animation_index = app_state.selected_led;
-        update_sprite_render(core_components.renderer, &brick_sprite, 10, 99);
-
-        /* Render the interactable user interface. */
-        render_menu_items(core_components.renderer, &config_page_ui, 550, 150);
-
-        if (app_state.current_page == MENU_PAGE)
-        { /* Render menu last on stack if it needs to show*/
-            SDL_RenderCopy(core_components.renderer, components.menuTexture, NULL, NULL);
-            render_menu_items(core_components.renderer, &menu_page_ui, 300, 250);
-        }
-        /* Main render call to update screen */
-        SDL_RenderPresent(core_components.renderer);
-
-        /* Delay to control frame rate Approximately 60 frames per second */
-        SDL_Delay(16);
+        /* Call the render_frame function */
+        render_frame(&app_state, &core_components, &components, &brick_sprite, &config_page_ui, &menu_page_ui, verbose_logging_enabled);
     }
 
     save_settings(&app_state);
@@ -139,25 +93,10 @@ int main(int argc, char *argv[])
     {
         install_daemon();
     }
-    return teardown(&core_components, &components, &config_page_ui, &menu_page_ui, &brick_sprite);
+    return teardown(&core_components, &components, &config_page_ui, &menu_page_ui, &brick_sprite, &app_state);
 }
 
-void render_colored_square(AppState *app_state, CoreSDLComponents *core_components)
-{
-    /* Adjusted to add 4 pixels on top */
-    SDL_Rect black_rect = {20, 96, BRICK_SPRITE_WIDTH, BRICK_SPRITE_HEIGHT + 4};
-    /* Black color */
-    SDL_SetRenderDrawColor(core_components->renderer, 0, 0, 0, 255);
-    SDL_RenderFillRect(core_components->renderer, &black_rect);
-    /* Adjusted to match the new black_rect */
-
-    SDL_Rect color_rect = {25, 101, BRICK_SPRITE_WIDTH - 10, BRICK_SPRITE_HEIGHT - 6};
-    int32_t color = app_state->led_settings[app_state->selected_led].color;
-    SDL_SetRenderDrawColor(core_components->renderer, (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF, 255);
-    SDL_RenderFillRect(core_components->renderer, &color_rect);
-}
-
-void handle_user_input(InputType user_input, AppState *app_state)
+void handle_user_input(InputType user_input, AppState *app_state, SDL_GameController *controller)
 {
     switch (app_state->current_page)
     {
@@ -236,7 +175,7 @@ void handle_user_input(InputType user_input, AppState *app_state)
             break;
         case DPAD_UP:
             /* Switch between settings */
-            app_state->selected_menu_option = (app_state->selected_menu_option - 1) % MENU_OPTION_COUNT;
+            app_state->selected_menu_option = (app_state->selected_menu_option - 1 + MENU_OPTION_COUNT) % MENU_OPTION_COUNT;
             break;
         case DPAD_DOWN:
             /* Switch between settings */
@@ -249,7 +188,6 @@ void handle_user_input(InputType user_input, AppState *app_state)
     break;
     }
 }
-
 void handle_change_setting(AppState *app_state, int change)
 {
     LedSettings *selected_led_settings = &app_state->led_settings[app_state->selected_led];
@@ -274,28 +212,35 @@ void handle_change_setting(AppState *app_state, int change)
         break;
     case COLOR:
     {
-        /* Find the current color index in colors */
-        int current_color_index = -1;
-        for (int i = 0; i < num_color; i++)
+        if (app_state->are_extended_colors_enabled)
         {
-            if (colors[i] == selected_led_settings->color)
+            selected_led_settings->color = next_color(selected_led_settings->color, change);
+        }
+        else
+        {
+            /* Find the current color index in colors */
+            int current_color_index = -1;
+            for (int i = 0; i < num_color; i++)
             {
-                current_color_index = i;
-                break;
+                if (colors[i] == selected_led_settings->color)
+                {
+                    current_color_index = i;
+                    break;
+                }
             }
+
+            /* If the current color is not found, default to the first color */
+            if (current_color_index == -1)
+            {
+                current_color_index = 0;
+            }
+
+            /* Update the color index based on the change */
+            current_color_index = (current_color_index + change + num_color) % num_color;
+
+            /* Set the new color */
+            selected_led_settings->color = colors[current_color_index];
         }
-
-        /* If the current color is not found, default to the first color */
-        if (current_color_index == -1)
-        {
-            current_color_index = 0;
-        }
-
-        /* Update the color index based on the change */
-        current_color_index = (current_color_index + change + num_color) % num_color;
-
-        /* Set the new color */
-        selected_led_settings->color = colors[current_color_index];
     }
     break;
     case MATCH_SETTINGS:
@@ -320,6 +265,9 @@ void handle_menu_select(AppState *app_state, MenuOption selected_menu_option)
     case DISABLE_ALL:
         turn_off_all_leds(app_state);
         break;
+    case TOGGLE_EXTENDED_COLORS:
+        app_state->are_extended_colors_enabled = !app_state->are_extended_colors_enabled;
+        break;
     case UNINSTALL:
         uninstall_daemon();
         turn_off_all_leds(app_state);
@@ -331,6 +279,27 @@ void handle_menu_select(AppState *app_state, MenuOption selected_menu_option)
         break;
     default:
         break;
+    }
+}
+
+void handle_event_updates(AppState *app_state, CoreSDLComponents *core_components, AdditionalSDLComponents *components,
+                          SelectableMenuItems *config_page_ui, SelectableMenuItems *menu_page_ui,
+                          InputType user_input, SDL_Event event)
+{
+    handle_user_input(user_input, app_state, core_components->controller);
+
+    if (is_supported_input_event(event.type))
+    {
+        if (app_state->should_update_leds)
+        {
+            update_leds(app_state);
+        }
+        if (app_state->should_save_settings)
+        {
+            save_settings(app_state);
+        }
+        update_config_page_ui_text(config_page_ui, core_components, components, app_state);
+        update_menu_ui_text(menu_page_ui, core_components, components, app_state);
     }
 }
 int initialize_additional_sdl_components(CoreSDLComponents *core_components, AdditionalSDLComponents *components)
@@ -382,6 +351,7 @@ int initialize_app_state(AppState *app_state)
     app_state->should_save_settings = false;
     app_state->should_quit = false;
     app_state->should_install_daemon = true;
+    app_state->are_extended_colors_enabled = false;
     app_state->current_page = CONFIG_PAGE;
     app_state->selected_menu_option = ENABLE_ALL;
 
@@ -415,7 +385,7 @@ void initialize_config_page_ui(SelectableMenuItems *menu_items, CoreSDLComponent
     }
 }
 
-void initialize_menu_ui(SelectableMenuItems *menu_items, CoreSDLComponents *core_components, AdditionalSDLComponents *components)
+void initialize_menu_ui(SelectableMenuItems *menu_items, CoreSDLComponents *core_components, AdditionalSDLComponents *components, AppState *app_state)
 {
     menu_items->text_color = (SDL_Color){255, 239, 186, 255};
     menu_items->text_shadow_color = (SDL_Color){0, 0, 0, 128};
@@ -429,7 +399,7 @@ void initialize_menu_ui(SelectableMenuItems *menu_items, CoreSDLComponents *core
     {
         menu_items->menu_text[setting_index] = malloc(menu_items->string_length * sizeof(char));
         /* preload default strings */
-        snprintf(menu_items->menu_text[setting_index], menu_items->string_length, "%s", menu_option_to_string(setting_index));
+        snprintf(menu_items->menu_text[setting_index], menu_items->string_length, "%s", menu_option_to_string(setting_index, app_state));
 
         /* create text textures from strings */
         menu_items->menu_text_textures[setting_index] = create_text_texture(core_components->renderer, components->font, &menu_items->text_color, &menu_items->text_shadow_color, menu_items->menu_text[setting_index]);
@@ -526,7 +496,7 @@ void update_menu_ui_text(SelectableMenuItems *menu_items, const CoreSDLComponent
     for (int menu_index = 0; menu_index < menu_items->item_count; menu_index++)
     {
         snprintf(menu_items->menu_text[menu_index], menu_items->string_length, "%s%s", selected_menu_option == menu_index ? ">>> " : "",
-                 menu_option_to_string(menu_index));
+                 menu_option_to_string(menu_index, app_state));
 
         menu_items->menu_text_textures[menu_index] = create_text_texture(core_components->renderer, components->font, selected_menu_option == menu_index ? &menu_items->text_highlight_color : &menu_items->text_color, &menu_items->text_shadow_color, menu_items->menu_text[menu_index]);
     }
@@ -633,6 +603,55 @@ int initialize_brick_sprite(Sprite *brick_sprite, SDL_Renderer *renderer)
     brick_sprite->animations[LED_TOP] = (AnimationInfo){top_frames, frame_durations, 7, 0, 0};
     brick_sprite->animations[LED_BACK] = (AnimationInfo){back_frames, frame_durations, 7, 0, 0};
     return 0;
+}
+
+void render_frame(AppState *app_state, CoreSDLComponents *core_components, AdditionalSDLComponents *components, Sprite *brick_sprite, SelectableMenuItems *config_page_ui, SelectableMenuItems *menu_page_ui, bool verbose_logging_enabled)
+{
+    /* Clear screen */
+    SDL_RenderClear(core_components->renderer);
+
+    /* Render background texture */
+    SDL_RenderCopy(core_components->renderer, components->backgroundTexture, NULL, NULL);
+
+    /* Render the user-selected color in front of a black square */
+    render_colored_square(app_state, core_components);
+
+    char log_message[STRING_LENGTH];
+    snprintf(log_message, sizeof(log_message), "Selected LED: %d\n", app_state->selected_led);
+    debug_log(log_message, verbose_logging_enabled);
+
+    /* Render brick sprite */
+    brick_sprite->current_animation_index = app_state->selected_led;
+    update_sprite_render(core_components->renderer, brick_sprite, 10, 99);
+
+    /* Render the interactable user interface. */
+    render_menu_items(core_components->renderer, config_page_ui, 550, 150);
+
+    if (app_state->current_page == MENU_PAGE)
+    { /* Render menu last on stack if it needs to show*/
+        SDL_RenderCopy(core_components->renderer, components->menuTexture, NULL, NULL);
+        render_menu_items(core_components->renderer, menu_page_ui, 250, 250);
+    }
+    /* Main render call to update screen */
+    SDL_RenderPresent(core_components->renderer);
+
+    /* Delay to control frame rate Approximately 60 frames per second */
+    SDL_Delay(16);
+}
+
+void render_colored_square(AppState *app_state, CoreSDLComponents *core_components)
+{
+    /* Adjusted to add 4 pixels on top */
+    SDL_Rect black_rect = {20, 96, BRICK_SPRITE_WIDTH, BRICK_SPRITE_HEIGHT + 4};
+    /* Black color */
+    SDL_SetRenderDrawColor(core_components->renderer, 0, 0, 0, 255);
+    SDL_RenderFillRect(core_components->renderer, &black_rect);
+    /* Adjusted to match the new black_rect */
+
+    SDL_Rect color_rect = {25, 101, BRICK_SPRITE_WIDTH - 10, BRICK_SPRITE_HEIGHT - 6};
+    int32_t color = app_state->led_settings[app_state->selected_led].color;
+    SDL_SetRenderDrawColor(core_components->renderer, (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF, 255);
+    SDL_RenderFillRect(core_components->renderer, &color_rect);
 }
 
 void render_text_texture(SDL_Renderer *renderer, SDL_Texture *texture, int x, int y)
@@ -810,7 +829,7 @@ void turn_on_all_leds(AppState *app_state)
 }
 
 int teardown(CoreSDLComponents *core_components, AdditionalSDLComponents *components,
-             SelectableMenuItems *config_menu_items, SelectableMenuItems *main_menu_items, Sprite *brick_sprite)
+             SelectableMenuItems *config_menu_items, SelectableMenuItems *main_menu_items, Sprite *brick_sprite, AppState *app_state)
 {
     free_menu_items(config_menu_items);
     free_menu_items(main_menu_items);
@@ -822,5 +841,5 @@ int teardown(CoreSDLComponents *core_components, AdditionalSDLComponents *compon
     IMG_Quit();
     TTF_Quit();
     SDL_Quit();
-    return 0;
+    return app_state->should_install_daemon ? 0 : 66;
 }
