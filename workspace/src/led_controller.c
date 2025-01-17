@@ -263,14 +263,14 @@ void handle_menu_select(AppState *app_state, MenuOption selected_menu_option)
         turn_on_all_leds(app_state);
         break;
     case DISABLE_ALL:
-        turn_off_all_leds(app_state, false);
+        turn_off_all_leds(app_state);
         break;
     case TOGGLE_EXTENDED_COLORS:
         app_state->are_extended_colors_enabled = !app_state->are_extended_colors_enabled;
         break;
     case UNINSTALL:
         uninstall_daemon();
-        turn_off_all_leds(app_state, false);
+        turn_off_all_leds(app_state);
         app_state->should_install_daemon = false;
         app_state->should_quit = true;
         break;
@@ -806,19 +806,12 @@ void color_match_leds(AppState *app_state)
     }
 }
 
-void turn_off_all_leds(AppState *app_state, bool remove_all_data)
+void turn_off_all_leds(AppState *app_state)
 {
     for (Led led = 0; led < LED_COUNT; led++)
     {
         app_state->led_settings[led].brightness = 0;
-
         app_state->led_settings[led].effect = DISABLE;
-        if (remove_all_data)
-        {
-            app_state->led_settings[led].color = 0;
-            app_state->led_settings[led].duration = 0;
-            app_state->led_settings[led].effect = 0;
-        }
     }
     update_leds(app_state);
     system("sh scripts/turn_off_all_leds.sh");
