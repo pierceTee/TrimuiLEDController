@@ -58,6 +58,8 @@ while IFS= read -r line; do
     elif echo "$line" | grep -qE '^effect=([0-9]+)$'; then
         effect=$(echo "$line" | sed -n 's/^effect=\([0-9]\+\)$/\1/p')
         apply_led_settings $led $brightness $color $duration $effect
+    elif echo "$line" | grep -qE '^should_enable_low_battery_indication='; then
+        echo "[$SCRIPT_NAME]: Ignoring should_enable_low_battery_indication setting ..." | tee -a "$LOG_FILE"
     fi
 done < "$SETTINGS_FILE"
 

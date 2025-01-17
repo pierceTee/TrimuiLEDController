@@ -88,7 +88,6 @@ int main(int argc, char *argv[])
     }
 
     save_settings(&app_state);
-    update_leds(&app_state);
     if (app_state.should_install_daemon)
     {
         install_daemon();
@@ -539,7 +538,7 @@ int read_settings(AppState *app_state)
         {
             // Handle global settings
             int temp_value;
-            if (sscanf(line, "low_battery_indication=%d", &temp_value) == 1)
+            if (sscanf(line, "should_enable_low_battery_indication=%d", &temp_value) == 1)
             {
                 app_state->should_enable_low_battery_indication = (temp_value != 0) ? true : false;
             }
@@ -583,7 +582,7 @@ int save_settings(AppState *app_state)
 
     // Save global settings first
     fprintf(file, "[global]\n");
-    fprintf(file, "low_battery_indication=%d\n\n", app_state->should_enable_low_battery_indication);
+    fprintf(file, "should_enable_low_battery_indication=%d\n\n", app_state->should_enable_low_battery_indication);
 
     // Save LED-specific settings
     for (int led_index = 0; led_index < LED_COUNT; led_index++)

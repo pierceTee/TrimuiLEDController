@@ -8,9 +8,6 @@
 # Enable write permissions on LED files
 chmod a+w /sys/class/led_anim/*
 
-# Disable write permissions on LED files
-trap 'chmod a-w ${LED_PATH}//*' EXIT
-
 case "$1" in
 1 )
         echo "enter low battery"
@@ -38,6 +35,3 @@ case "$1" in
 *)
         ;;
 esac
-
-# Disable write permissions on LED files
-chmod a-w /sys/class/led_anim/*

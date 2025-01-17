@@ -1,12 +1,9 @@
 #!/bin/sh
-
+BASE_LED_PATH="/sys/class/led_anim"
 SERVICE_PATH="/etc/led_controller"
 SCRIPT_NAME=$(basename "$0")
 
 echo "[`date '+%Y-%m-%d %H:%M:%S'`][$SCRIPT_NAME]: Removing all led_controller files from system ..."
-# Disable LEDs to indicate that the service is being uninstalled
-./turn_off_all_leds.sh
-
 # Stop our service
 /etc/init.d/led-settings-daemon stop
 

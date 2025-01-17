@@ -19,7 +19,11 @@ echo "[`date '+%Y-%m-%d %H:%M:%S'`][$SCRIPT_NAME]: Finished writing service info
 
 
 # Read the should_enable_low_battery_indication setting
-LOW_BATTERY_ENABLED=$(grep "should_enable_low_battery_indication" settings.ini | cut -d'=' -f2 | tr -d '[:space:]')
+if [ ! -f "settings.ini" ]; then
+    echo "Error: settings.ini not found"
+    exit 1
+fi
+LOW_BATTERY_ENABLED=$(grep -m 1 "should_enable_low_battery_indication" settings.ini | cut -d'=' -f2 | tr -d '[:space:]' || echo "0")
 
 # If enabled, replace the stock script with our custom one
 if [ "$LOW_BATTERY_ENABLED" = "1" ]; then
