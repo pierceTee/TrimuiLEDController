@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
     {
         install_daemon();
     }
-    return teardown(&core_components, &components, &config_page_ui, &menu_page_ui, &brick_sprite);
+    return teardown(&core_components, &components, &config_page_ui, &menu_page_ui, &brick_sprite, &app_state);
 }
 
 void handle_user_input(InputType user_input, AppState *app_state, SDL_GameController *controller)
@@ -829,7 +829,7 @@ void turn_on_all_leds(AppState *app_state)
 }
 
 int teardown(CoreSDLComponents *core_components, AdditionalSDLComponents *components,
-             SelectableMenuItems *config_menu_items, SelectableMenuItems *main_menu_items, Sprite *brick_sprite)
+             SelectableMenuItems *config_menu_items, SelectableMenuItems *main_menu_items, Sprite *brick_sprite, AppState *app_state)
 {
     free_menu_items(config_menu_items);
     free_menu_items(main_menu_items);
@@ -841,5 +841,5 @@ int teardown(CoreSDLComponents *core_components, AdditionalSDLComponents *compon
     IMG_Quit();
     TTF_Quit();
     SDL_Quit();
-    return 0;
+    return app_state->should_install_daemon ? 0 : 66;
 }

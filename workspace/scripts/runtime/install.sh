@@ -1,7 +1,7 @@
 #!/bin/sh
 
-export SYS_SERVICE_PATH="/etc/led_controller"
-export SERVICE_NAME="led-settings-daemon"
+SYS_SERVICE_PATH="/etc/led_controller"
+SERVICE_NAME="led-settings-daemon"
 
 SCRIPT_NAME=$(basename "$0")
 
