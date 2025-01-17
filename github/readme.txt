@@ -25,15 +25,17 @@ B/START: Return to config page.
 A: Execute selected setting.
 
 
-Q & A:
+Menu Options: 
+Sync LED colors - Matches all LEDs colors to the currently selected LED.
+Turn ON all LEDs - Enables all the LEDs by setting their brightness to the max value.
+Turn OFF all LEDs - Disabled all the LEDs by setting their brightness to 0.
+Enable/Disable extended colors - Toggles the ability to select colors from an extended range of RGB color values.
+Enable/Disable low battery warning - Toggles the default OS behavior of flashing your LEDs when the battery falls below 15%. 
+Uninstall - Uninstalls all services and installed system files. Turns the LEDs off on exit. 
 
-Q: What am I "Uninstalling"? 
-A: When the application exits normally, I install a settings daemon (a service that 
-runs on device startup) that sets the LEDs and prevents other processes from changing
-them. If you decide you no longer want this functionality, the uninstall action removes
-the daemon and returns LED functionality to stock.
+
 
 Notes:
 This is a free app made for fun over christmas break, hopefully you get some joy from messing with your LEDs. 
 If you got this from anywhere other than https://github.com/pierceTee/TrimuiLEDController, 
-you should follow that link and download the latest release. If you paid for this, get your money back ASAP. 
+you should follow that link and download the latest release.
