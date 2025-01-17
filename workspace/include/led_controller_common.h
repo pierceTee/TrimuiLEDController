@@ -37,7 +37,7 @@
 #define LED_SETTINGS_COUNT 6
 
 /* enable all, disable all, uninstall, quit*/
-#define MENU_OPTION_COUNT 4
+#define MENU_OPTION_COUNT 5
 
 /* DISABLE, LINEAR, BREATH, SNIFF, STATIC, BLINK1, BLINK2, BLINK3 */
 #define ANIMATION_EFFECT_COUNT 8
@@ -55,6 +55,8 @@
 #define NUM_COLORS 17
 /* Application Consts */
 #define STRING_LENGTH 256
+/*How much to increment/decrement the color when the user changes the value in extened color mode*/
+#define COLOR_CYLCE_INCREMENT 16
 
 /* The different Led clusters we support */
 typedef enum
@@ -94,6 +96,7 @@ typedef enum
 {
   ENABLE_ALL,
   DISABLE_ALL,
+  TOGGLE_EXTENDED_COLORS,
   UNINSTALL,
   QUIT,
 } MenuOption;
@@ -140,6 +143,7 @@ typedef struct
   bool should_update_leds;
   bool should_quit;
   bool should_install_daemon;
+  bool are_extended_colors_enabled;
   ApplicationPage current_page;
   Led selected_led;
   LedSettingOption selected_setting;
@@ -158,6 +162,15 @@ typedef struct
  */
 const char *color_to_string(uint32_t color);
 
+/**
+ * Cycles to the next color in the color wheel.
+ *
+ * This is used to cycle colors in the extended color mode.
+ * Parameters:
+ *    color - the current 0xRRGGBBAA color to cycle from
+ *   sign - direction to cycle the color
+ */
+uint32_t next_color(uint32_t color, int sign);
 /**
  * Convert an animation effect to a string.
  *
@@ -185,12 +198,13 @@ const char *led_setting_option_to_string(LedSettingOption setting);
  *
  * Parameters:
  *    option - menu option to convert
+ *    app_state - application state to reference for conditional strings
  *
  * Returns:
  *   string containing the menu option
  */
 
-const char *menu_option_to_string(MenuOption option);
+const char *menu_option_to_string(MenuOption option, const AppState *app_state);
 
 /**
  * Convert a LED to a string.

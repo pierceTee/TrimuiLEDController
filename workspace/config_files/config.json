@@ -3,5 +3,5 @@
   "icon": "assets/images/icon.png",
   "iconsel": "assets/images/icon.png",
   "launch": "launch.sh",
-  "description": "Configure the LEDs on your triumUI device"
+  "description": "Configure the LEDs on your triumUI Brick"
 }
