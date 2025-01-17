@@ -135,11 +135,12 @@ void initialize_config_page_ui(SelectableMenuItems *menu_items, CoreSDLComponent
  *    menu_items - user interface object to initialize
  *    core_components - core SDL components
  *    components - SDL components specific to this application
+ *    app_state - AppState object to reference for conditional logic
  *
  * Returns:
  *   void
  */
-void initialize_menu_ui(SelectableMenuItems *menu_items, CoreSDLComponents *core_components, AdditionalSDLComponents *components);
+void initialize_menu_ui(SelectableMenuItems *menu_items, CoreSDLComponents *core_components, AdditionalSDLComponents *components, AppState *app_state);
 
 /**
  * Frees all sub-objects of the menu_items

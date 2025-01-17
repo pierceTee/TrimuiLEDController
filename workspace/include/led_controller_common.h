@@ -37,7 +37,7 @@
 #define LED_SETTINGS_COUNT 6
 
 /* enable all, disable all, uninstall, quit*/
-#define MENU_OPTION_COUNT 4
+#define MENU_OPTION_COUNT 5
 
 /* DISABLE, LINEAR, BREATH, SNIFF, STATIC, BLINK1, BLINK2, BLINK3 */
 #define ANIMATION_EFFECT_COUNT 8
@@ -94,6 +94,7 @@ typedef enum
 {
   ENABLE_ALL,
   DISABLE_ALL,
+  TOGGLE_EXTENDED_COLORS,
   UNINSTALL,
   QUIT,
 } MenuOption;
@@ -140,6 +141,7 @@ typedef struct
   bool should_update_leds;
   bool should_quit;
   bool should_install_daemon;
+  bool are_extended_colors_enabled;
   ApplicationPage current_page;
   Led selected_led;
   LedSettingOption selected_setting;
@@ -185,12 +187,13 @@ const char *led_setting_option_to_string(LedSettingOption setting);
  *
  * Parameters:
  *    option - menu option to convert
+ *    app_state - application state to reference for conditional strings
  *
  * Returns:
  *   string containing the menu option
  */
 
-const char *menu_option_to_string(MenuOption option);
+const char *menu_option_to_string(MenuOption option, const AppState *app_state);
 
 /**
  * Convert a LED to a string.

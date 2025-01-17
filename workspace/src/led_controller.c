@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
         return 1;
     }
     initialize_config_page_ui(&config_page_ui, &core_components, &components);
-    initialize_menu_ui(&menu_page_ui, &core_components, &components);
+    initialize_menu_ui(&menu_page_ui, &core_components, &components, &app_state);
 
     update_config_page_ui_text(&config_page_ui, &core_components, &components, &app_state);
     update_menu_ui_text(&menu_page_ui, &core_components, &components, &app_state);
@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
         if (app_state.current_page == MENU_PAGE)
         { /* Render menu last on stack if it needs to show*/
             SDL_RenderCopy(core_components.renderer, components.menuTexture, NULL, NULL);
-            render_menu_items(core_components.renderer, &menu_page_ui, 300, 250);
+            render_menu_items(core_components.renderer, &menu_page_ui, 250, 250);
         }
         /* Main render call to update screen */
         SDL_RenderPresent(core_components.renderer);
@@ -236,7 +236,7 @@ void handle_user_input(InputType user_input, AppState *app_state)
             break;
         case DPAD_UP:
             /* Switch between settings */
-            app_state->selected_menu_option = (app_state->selected_menu_option - 1) % MENU_OPTION_COUNT;
+            app_state->selected_menu_option = (app_state->selected_menu_option - 1 + MENU_OPTION_COUNT) % MENU_OPTION_COUNT;
             break;
         case DPAD_DOWN:
             /* Switch between settings */
@@ -319,6 +319,9 @@ void handle_menu_select(AppState *app_state, MenuOption selected_menu_option)
         break;
     case DISABLE_ALL:
         turn_off_all_leds(app_state);
+        break;
+    case TOGGLE_EXTENDED_COLORS:
+        app_state->are_extended_colors_enabled = !app_state->are_extended_colors_enabled;
         break;
     case UNINSTALL:
         uninstall_daemon();
@@ -415,7 +418,7 @@ void initialize_config_page_ui(SelectableMenuItems *menu_items, CoreSDLComponent
     }
 }
 
-void initialize_menu_ui(SelectableMenuItems *menu_items, CoreSDLComponents *core_components, AdditionalSDLComponents *components)
+void initialize_menu_ui(SelectableMenuItems *menu_items, CoreSDLComponents *core_components, AdditionalSDLComponents *components, AppState *app_state)
 {
     menu_items->text_color = (SDL_Color){255, 239, 186, 255};
     menu_items->text_shadow_color = (SDL_Color){0, 0, 0, 128};
@@ -429,7 +432,7 @@ void initialize_menu_ui(SelectableMenuItems *menu_items, CoreSDLComponents *core
     {
         menu_items->menu_text[setting_index] = malloc(menu_items->string_length * sizeof(char));
         /* preload default strings */
-        snprintf(menu_items->menu_text[setting_index], menu_items->string_length, "%s", menu_option_to_string(setting_index));
+        snprintf(menu_items->menu_text[setting_index], menu_items->string_length, "%s", menu_option_to_string(setting_index, app_state));
 
         /* create text textures from strings */
         menu_items->menu_text_textures[setting_index] = create_text_texture(core_components->renderer, components->font, &menu_items->text_color, &menu_items->text_shadow_color, menu_items->menu_text[setting_index]);
@@ -526,7 +529,7 @@ void update_menu_ui_text(SelectableMenuItems *menu_items, const CoreSDLComponent
     for (int menu_index = 0; menu_index < menu_items->item_count; menu_index++)
     {
         snprintf(menu_items->menu_text[menu_index], menu_items->string_length, "%s%s", selected_menu_option == menu_index ? ">>> " : "",
-                 menu_option_to_string(menu_index));
+                 menu_option_to_string(menu_index, app_state));
 
         menu_items->menu_text_textures[menu_index] = create_text_texture(core_components->renderer, components->font, selected_menu_option == menu_index ? &menu_items->text_highlight_color : &menu_items->text_color, &menu_items->text_shadow_color, menu_items->menu_text[menu_index]);
     }

@@ -90,10 +90,15 @@ const char *led_setting_option_to_string(LedSettingOption setting)
   }
 }
 
-const char *menu_option_to_string(MenuOption option)
+const char *menu_option_to_string(MenuOption option, const AppState *app_state)
 {
   switch (option)
   {
+  case TOGGLE_EXTENDED_COLORS:
+    if (app_state->are_extended_colors_enabled)
+      return "Disable Extended Colors";
+    else
+      return "Enable Extended Colors";
   case ENABLE_ALL:
     return "Turn on all LEDs";
   case DISABLE_ALL:
