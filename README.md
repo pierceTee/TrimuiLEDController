@@ -30,11 +30,15 @@ This application is designed for the TrimUI smart Brick emulation handheld. Ther
 - **B/START:** Return to config page.
 - **A:** Execute selected setting.
 
-## FAQ
+### Menu Options
 
-**Q:** What am I "Uninstalling"?
+- **Sync LED colors:** Match all LED colors to the currently selected LED.
+- **Turn ON all LEDs:** Enable all LEDs by setting their brightness to the maximum value.
+- **Turn OFF all LEDs:** Disable all LEDs by setting their brightness to 0.
+- **Enable/Disable extended colors:** Toggle the ability to select colors from an extended range of RGB values.
+- **Enable/Disable low battery warning:** Toggle the default OS behavior of flashing LEDs when the battery falls below 15%.
+- **Uninstall:** Uninstall all services and system files, turning off the LEDs on exit.
 
-**A:** When the application exits normally, it installs a settings daemon (a service that runs on device startup) that sets the LEDs and prevents other processes from changing them. If you decide you no longer want this functionality, the uninstall action removes the daemon and returns LED functionality to stock.
 
 ## Development Guide
 
@@ -157,10 +161,10 @@ Pierce
 - [Shaun Inman](https://github.com/shauninman): Their dev toolchains, and MinUI as a whole were instrumental in building this project.
 - [ro8inmorgan](https://github.com/ro8inmorgan): Their [LedControl](https://github.com/ro8inmorgan/LedControl) application helped me fix some bugs/functionality in this application.
 - Retro Handhelds discord users: `Heef`, `Richard(RJNY)`, and `seki`. The app wouldn't be half as polished without their testing and feedback.
+- [skiselkov](https://github.com/skiselkov): For their contribution to the application.
 
 ## TODO 
 
 - Smart pro support.
 - Separate core SDL functionality to its own repo to import as a submodule for future apps?
-- Look into running daemon before the OS can flash blue LEDs on boot.
-- Support low battery red_led flash functionality.
+
