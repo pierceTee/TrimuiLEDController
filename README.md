@@ -159,7 +159,6 @@ Pierce
 ## Special Thanks 
 
 - [Shaun Inman](https://github.com/shauninman): Their dev toolchains, and MinUI as a whole were instrumental in building this project.
-- [ro8inmorgan](https://github.com/ro8inmorgan): Their [LedControl](https://github.com/ro8inmorgan/LedControl) application helped me fix some bugs/functionality in this application.
 - Retro Handhelds discord users: `Heef`, `Richard(RJNY)`, and `seki`. The app wouldn't be half as polished without their testing and feedback.
 - [skiselkov](https://github.com/skiselkov): For their contribution to the application.
 
